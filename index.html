@@ -157,10 +157,10 @@
     </header>
 
     <div class="nav-tabs no-print">
-        <button class="tab-btn active" onclick="mudarAba('abaConsumo')">☕ Consumo por Sala</button>
-        <button class="tab-btn" onclick="mudarAba('abaPendentes')">📝 Fichas / Assinaturas por Evento</button>
-        <button class="tab-btn" onclick="mudarAba('abaEstoque')">📦 Cadastro de Estoque</button>
-        <button class="tab-btn" onclick="mudarAba('abaRelatorio')">📊 Histórico Geral</button>
+        <button class="tab-btn active" onclick="mudarAba('abaConsumo', event)">☕ Consumo por Sala</button>
+        <button class="tab-btn" onclick="mudarAba('abaPendentes', event)">📝 Fichas / Assinaturas por Evento</button>
+        <button class="tab-btn" onclick="mudarAba('abaEstoque', event)">📦 Cadastro de Estoque</button>
+        <button class="tab-btn" onclick="mudarAba('abaRelatorio', event)">📊 Histórico Geral</button>
     </div>
 
     <!-- ABA 1: CONSUMO -->
@@ -362,7 +362,7 @@
     </div>
 </div>
 
-<!-- MODAL DETALHADO COM BOTÃO DE FECHAR -->
+<!-- MODAL DETALHADO DE ASSINATURA -->
 <div id="modalAssinatura" class="modal">
     <div class="modal-content">
         <button class="btn-close-modal" onclick="fecharModal()">✖</button>
@@ -402,8 +402,30 @@
     </div>
 </div>
 
+<!-- SCRIPTS DO FIREBASE SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
 <script>
-    document.getElementById('dataConsumo').valueAsDate = new Date();
+    // CONFIGURAÇÃO E INICIALIZAÇÃO DO FIREBASE
+    const firebaseConfig = {
+        apiKey: "AIzaSyAqGytGqn42kf-SK1Y5K7BOIYMkKXXb9O0",
+        authDomain: "controle-bebidas-salas-eventos.firebaseapp.com",
+        databaseURL: "https://controle-bebidas-salas-eventos-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "controle-bebidas-salas-eventos",
+        storageBucket: "controle-bebidas-salas-eventos.firebasestorage.app",
+        messagingSenderId: "758622832521",
+        appId: "1:758622832521:web:c4677274beebcf4009c358"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+
+    // VARIÁVEIS GLOBAIS DE ESTADO
+    let fichas = [];
+    let estoque = [];
+    let assinaturasEventos = {};
+    let eventoAtualNome = null;
 
     const estoquePadrao = [
         { id: '1', nome: 'Água Copo', qtd: 500 },
@@ -415,21 +437,41 @@
         { id: '7', nome: 'Leite', qtd: 50 }
     ];
 
-    let fichas = JSON.parse(localStorage.getItem('ab_fichas')) || [];
-    let estoqueSalvo = JSON.parse(localStorage.getItem('ab_estoque')) || [];
-    let assinaturasEventos = JSON.parse(localStorage.getItem('ab_assinaturas_eventos')) || {};
+    document.getElementById('dataConsumo').valueAsDate = new Date();
 
-    let estoque = (estoqueSalvo.length < estoquePadrao.length) ? estoquePadrao : estoqueSalvo;
-    localStorage.setItem('ab_estoque', JSON.stringify(estoque));
+    // SINCRONIZAÇÃO EM TEMPO REAL COM O FIREBASE
+    database.ref('estoque').on('value', (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+            estoque = Array.isArray(data) ? data : Object.values(data);
+        } else {
+            estoque = estoquePadrao;
+            database.ref('estoque').set(estoquePadrao);
+        }
+        renderizarTabelaConsumo();
+        renderizarEstoque();
+    });
 
-    let eventoAtualNome = null;
+    database.ref('fichas').on('value', (snapshot) => {
+        const data = snapshot.val();
+        fichas = data ? Object.values(data) : [];
+        fichas.sort((a, b) => b.id - a.id); // Ordena mais recentes primeiro
+        renderizarHistorico();
+        renderizarFichasPendentes();
+    });
 
-    function mudarAba(abaId) {
+    database.ref('assinaturas').on('value', (snapshot) => {
+        assinaturasEventos = snapshot.val() || {};
+        renderizarFichasPendentes();
+    });
+
+    // NAVEGAÇÃO DE ABAS
+    function mudarAba(abaId, evt) {
         document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
         
         document.getElementById(abaId).classList.add('active');
-        event.currentTarget.classList.add('active');
+        if (evt) evt.currentTarget.classList.add('active');
 
         if(abaId === 'abaEstoque') renderizarEstoque();
         if(abaId === 'abaRelatorio') renderizarHistorico();
@@ -437,6 +479,7 @@
         if(abaId === 'abaPendentes') renderizarFichasPendentes();
     }
 
+    // CONSUMO POR SALA
     function renderizarTabelaConsumo() {
         const tbody = document.getElementById('tabelaConsumoBody');
         tbody.innerHTML = '';
@@ -507,8 +550,9 @@
 
         if (itensConsumidos.length === 0) return alert('Nenhum consumo foi digitado.');
 
+        const novaFichaId = Date.now().toString();
         const novaFicha = {
-            id: Date.now().toString(),
+            id: novaFichaId,
             dataConsumo: dataConsumo,
             dataHora: dataHoraLancamento,
             evento: eventoKey,
@@ -516,9 +560,9 @@
             itens: itensConsumidos
         };
 
-        fichas.unshift(novaFicha);
-        localStorage.setItem('ab_estoque', JSON.stringify(estoque));
-        localStorage.setItem('ab_fichas', JSON.stringify(fichas));
+        // Salva Ficha e Estoque Atualizado no Firebase
+        database.ref('fichas/' + novaFichaId).set(novaFicha);
+        database.ref('estoque').set(estoque);
 
         alert(`Lançamento da sala ${sala} do dia ${dataConsumo} registrado para o evento "${eventoKey}"!`);
         
@@ -526,6 +570,7 @@
         renderizarTabelaConsumo();
     }
 
+    // CONSOLIDAÇÃO E FICHAS PENDENTES
     function obterEventosConsolidados() {
         let eventosMap = {};
 
@@ -555,6 +600,7 @@
 
     function renderizarFichasPendentes() {
         const tbody = document.getElementById('tabelaPendentesBody');
+        if (!tbody) return;
         tbody.innerHTML = '';
 
         const eventosMap = obterEventosConsolidados();
@@ -591,9 +637,11 @@
         });
     }
 
-    // --- HISTÓRICO COM FILTRO POR PERÍODO ---
+    // HISTÓRICO COM FILTROS
     function renderizarHistorico() {
         const container = document.getElementById('containerHistoricoCards');
+        if (!container) return;
+        
         const termoBusca = (document.getElementById('buscaHistorico')?.value || '').toLowerCase().trim();
         const dtInicio = document.getElementById('filtroDataInicio')?.value;
         const dtFim = document.getElementById('filtroDataFim')?.value;
@@ -657,28 +705,28 @@
     }
 
     function excluirLancamentoHistorico(idFicha) {
-        if (confirm('Tem certeza que deseja excluir este lançamento do histórico?')) {
-            fichas = fichas.filter(f => f.id !== idFicha);
-            localStorage.setItem('ab_fichas', JSON.stringify(fichas));
-            renderizarHistorico();
-            renderizarFichasPendentes();
+        if (confirm('Tem certeza que deseja excluir este lançamento do banco de dados?')) {
+            database.ref('fichas/' + idFicha).remove();
         }
     }
 
-    // --- ESTOQUE E EDIÇÃO ---
+    // CADASTRO E EDIÇÃO DE ESTOQUE
     function cadastrarItemEstoque() {
         const nome = document.getElementById('novoItemNome').value.trim();
         const qtd = parseInt(document.getElementById('novoItemQtd').value, 10) || 0;
         if (!nome) return alert('Digite o nome do item.');
+        
         estoque.push({ id: Date.now().toString(), nome, qtd });
-        localStorage.setItem('ab_estoque', JSON.stringify(estoque));
+        database.ref('estoque').set(estoque);
+        
         document.getElementById('novoItemNome').value = '';
-        renderizarEstoque();
     }
 
     function renderizarEstoque() {
         const tbody = document.getElementById('tabelaEstoqueBody');
+        if(!tbody) return;
         tbody.innerHTML = '';
+
         estoque.forEach(item => {
             tbody.innerHTML += `
                 <tr>
@@ -718,21 +766,19 @@
         if(item) {
             item.nome = novoNome;
             item.qtd = Math.max(0, novaQtd);
-            localStorage.setItem('ab_estoque', JSON.stringify(estoque));
-            renderizarEstoque();
+            database.ref('estoque').set(estoque);
             fecharModalEditar();
         }
     }
 
     function excluirItemEstoque(id) {
-        if (confirm('Excluir este item?')) {
+        if (confirm('Excluir este item do estoque?')) {
             estoque = estoque.filter(item => item.id !== id);
-            localStorage.setItem('ab_estoque', JSON.stringify(estoque));
-            renderizarEstoque();
+            database.ref('estoque').set(estoque);
         }
     }
 
-    // --- MODAL DETALHADO POR DIA ---
+    // ASSINATURA E MODAL DETALHADO
     const canvas = document.getElementById('canvasAssinatura');
     const ctx = canvas.getContext('2d');
     let desenhando = false;
@@ -842,14 +888,14 @@
 
     function salvarAssinatura() {
         if (eventoAtualNome) {
-            assinaturasEventos[eventoAtualNome] = canvas.toDataURL('image/png');
-            localStorage.setItem('ab_assinaturas_eventos', JSON.stringify(assinaturasEventos));
+            const dataUrl = canvas.toDataURL('image/png');
+            database.ref('assinaturas/' + eventoAtualNome).set(dataUrl);
             fecharModal();
-            renderizarFichasPendentes();
-            alert(`Assinatura do evento "${eventoAtualNome}" confirmada com sucesso!`);
+            alert(`Assinatura do evento "${eventoAtualNome}" salva no Firebase!`);
         }
     }
 
+    // COMPROVANTE PDF/IMPRESSÃO
     function imprimirComprovante(evKey) {
         const eventosMap = obterEventosConsolidados();
         const ev = eventosMap[evKey];
@@ -961,7 +1007,6 @@
         `);
         win.document.close();
         
-        // Aguarda carregar a imagem da assinatura/logo para acionar a impressão
         setTimeout(() => {
             win.focus();
             win.print();
@@ -969,16 +1014,11 @@
     }
 
     function limparHistorico() {
-        if (confirm('Limpar todo o histórico, fichas e assinaturas?')) {
-            fichas = []; assinaturasEventos = {};
-            localStorage.setItem('ab_fichas', JSON.stringify(fichas));
-            localStorage.setItem('ab_assinaturas_eventos', JSON.stringify(assinaturasEventos));
-            renderizarHistorico();
-            renderizarFichasPendentes();
+        if (confirm('Atenção: deseja apagar permanentemente todas as fichas e assinaturas salvas no Firebase?')) {
+            database.ref('fichas').remove();
+            database.ref('assinaturas').remove();
         }
     }
-
-    renderizarTabelaConsumo();
 </script>
 
 </body>
