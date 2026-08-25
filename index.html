@@ -52,76 +52,26 @@
         .btn-danger { background: var(--danger); }
         .btn-sm { padding: 4px 8px; font-size: 12px; }
         .btn-block { width: 100%; justify-content: center; padding: 12px; font-size: 16px; margin-top: 10px; }
+        .btn:disabled { background: #ccc !important; cursor: not-allowed !important; opacity: 0.6; }
 
         .badge { padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
         .badge-pending { background: #ffeaa7; color: #d63031; }
         .badge-signed { background: #badc58; color: #075e54; }
 
-        /* Estilos do Histórico Agrupado */
-        .historico-card {
-            background: #fff;
-            border: 1px solid #cbd5e1;
-            border-left: 5px solid var(--primary);
-            border-radius: 6px;
-            padding: 12px 15px;
-            margin-bottom: 12px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-        }
-        .historico-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #e2e8f0;
-            padding-bottom: 8px;
-            margin-bottom: 8px;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-        .historico-tags {
-            display: flex;
-            gap: 12px;
-            align-items: center;
-            font-size: 14px;
-        }
-        .historico-itens {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 5px;
-        }
-        .item-chip {
-            background: #f1f5f9;
-            border: 1px solid #cbd5e1;
-            padding: 4px 10px;
-            border-radius: 15px;
-            font-size: 13px;
-            color: #334155;
-        }
+        /* Histórico Agrupado */
+        .historico-card { background: #fff; border: 1px solid #cbd5e1; border-left: 5px solid var(--primary); border-radius: 6px; padding: 12px 15px; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .historico-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px; margin-bottom: 8px; flex-wrap: wrap; gap: 10px; }
+        .historico-tags { display: flex; gap: 12px; align-items: center; font-size: 14px; }
+        .historico-itens { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 5px; }
+        .item-chip { background: #f1f5f9; border: 1px solid #cbd5e1; padding: 4px 10px; border-radius: 15px; font-size: 13px; color: #334155; }
         .item-chip strong { color: var(--primary); }
 
         /* Modais */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; justify-content: center; align-items: center; padding: 10px; }
-        .modal-content { position: relative; background: #fff; padding: 25px; border-radius: 8px; width: 100%; max-width: 750px; max-height: 92vh; overflow-y: auto; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        .modal-content { position: relative; background: #fff; padding: 25px; border-radius: 8px; width: 100%; max-width: 850px; max-height: 92vh; overflow-y: auto; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
         .modal-sm { max-width: 450px; }
 
-        .btn-close-modal {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            background: #e2e8f0;
-            color: #333;
-            border: none;
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            font-weight: bold;
-            font-size: 16px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s;
-        }
+        .btn-close-modal { position: absolute; top: 15px; right: 15px; background: #e2e8f0; color: #333; border: none; width: 32px; height: 32px; border-radius: 50%; font-weight: bold; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
         .btn-close-modal:hover { background: var(--danger); color: #fff; }
 
         .resumo-header { background: #e8f0fe; padding: 12px; border-radius: 6px; font-size: 14px; margin-bottom: 15px; border-left: 5px solid var(--primary); }
@@ -243,9 +193,11 @@
                 <thead>
                     <tr>
                         <th>Item / Bebida</th>
-                        <th style="width: 110px;">Saída</th>
-                        <th style="width: 110px;">Retorno</th>
-                        <th style="width: 130px;">Consumo</th>
+                        <th style="width: 100px;">Valor Unit.</th>
+                        <th style="width: 90px;">Saída</th>
+                        <th style="width: 90px;">Retorno</th>
+                        <th style="width: 100px;">Consumo</th>
+                        <th style="width: 110px;">Valor Total</th>
                     </tr>
                 </thead>
                 <tbody id="tabelaConsumoBody"></tbody>
@@ -288,6 +240,10 @@
                     <label>Qtd em Estoque:</label>
                     <input type="number" id="novoItemQtd" value="100">
                 </div>
+                <div class="form-group">
+                    <label>Valor Unitário (R$):</label>
+                    <input type="number" id="novoItemValor" step="0.01" value="0.00">
+                </div>
                 <div class="form-group" style="justify-content: flex-end;">
                     <button class="btn btn-success" onclick="cadastrarItemEstoque()">➕ Cadastrar</button>
                 </div>
@@ -300,6 +256,7 @@
                     <th>Código</th>
                     <th>Descrição</th>
                     <th>Saldo</th>
+                    <th>Valor Unit. (R$)</th>
                     <th style="width: 180px; text-align: center;">Ações</th>
                 </tr>
             </thead>
@@ -351,9 +308,13 @@
             <label>Descrição do Item:</label>
             <input type="text" id="editItemNome">
         </div>
-        <div class="form-group" style="margin-bottom: 15px;">
+        <div class="form-group" style="margin-bottom: 12px;">
             <label>Quantidade em Estoque:</label>
             <input type="number" id="editItemQtd" min="0">
+        </div>
+        <div class="form-group" style="margin-bottom: 15px;">
+            <label>Valor Unitário (R$):</label>
+            <input type="number" id="editItemValor" step="0.01" min="0">
         </div>
         <div style="display: flex; gap: 10px;">
             <button class="btn btn-secondary" onclick="fecharModalEditar()" style="flex: 1;">Cancelar</button>
@@ -382,22 +343,24 @@
             <thead>
                 <tr>
                     <th style="text-align:left;">Descrição do Item</th>
-                    <th style="text-align:center; width: 140px;">Qtd Total Consumida</th>
+                    <th style="text-align:center; width: 120px;">Qtd Consumida</th>
+                    <th style="text-align:center; width: 130px;">Valor Unit. (R$)</th>
+                    <th style="text-align:right; width: 130px;">Valor Total (R$)</th>
                 </tr>
             </thead>
             <tbody id="resumoTotalGeralBody"></tbody>
         </table>
 
-        <p style="font-size: 13px; font-weight: bold; color: var(--primary); margin-top: 15px; text-align: left;">
+        <p id="tituloAssinatura" style="font-size: 13px; font-weight: bold; color: var(--primary); margin-top: 15px; text-align: left;">
             ✍️ Assinatura de Aceite e Fechamento Final do Evento:
         </p>
         
         <canvas id="canvasAssinatura"></canvas>
         
         <div style="display: flex; gap: 10px; margin-top: 15px;">
-            <button class="btn btn-danger" onclick="limparCanvas()" style="flex: 1;">🔄 Limpar Assinatura</button>
+            <button id="btnLimparAssinatura" class="btn btn-danger" onclick="limparCanvas()" style="flex: 1;">🔄 Limpar Assinatura</button>
             <button class="btn btn-secondary" onclick="fecharModal()" style="flex: 1;">Fechar Tela</button>
-            <button class="btn btn-success" onclick="salvarAssinatura()" style="flex: 2;">Confirmar Assinatura</button>
+            <button id="btnSalvarAssinatura" class="btn btn-success" onclick="salvarAssinatura()" style="flex: 2;">Confirmar Assinatura</button>
         </div>
     </div>
 </div>
@@ -407,7 +370,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
 <script>
-    // CONFIGURAÇÃO E INICIALIZAÇÃO DO FIREBASE
+    // CONFIGURAÇÃO DO FIREBASE
     const firebaseConfig = {
         apiKey: "AIzaSyAqGytGqn42kf-SK1Y5K7BOIYMkKXXb9O0",
         authDomain: "controle-bebidas-salas-eventos.firebaseapp.com",
@@ -425,25 +388,29 @@
     let fichas = [];
     let estoque = [];
     let assinaturasEventos = {};
+    let precosAjustadosEventos = {}; // Armazena ajustes de preço por evento { NOME_EVENTO: { itemNome: valor } }
     let eventoAtualNome = null;
 
     const estoquePadrao = [
-        { id: '1', nome: 'Água Copo', qtd: 500 },
-        { id: '2', nome: 'Água Garrafa s/ Gás', qtd: 300 },
-        { id: '3', nome: 'Água Garrafa c/ Gás', qtd: 200 },
-        { id: '4', nome: 'Água Galão', qtd: 50 },
-        { id: '5', nome: 'Café (Garrafa / Bule)', qtd: 50 },
-        { id: '6', nome: 'Água Quente', qtd: 50 },
-        { id: '7', nome: 'Leite', qtd: 50 }
+        { id: '1', nome: 'Água Copo', qtd: 500, valorUnitario: 0.00 },
+        { id: '2', nome: 'Água Garrafa s/ Gás', qtd: 300, valorUnitario: 0.00 },
+        { id: '3', nome: 'Água Garrafa c/ Gás', qtd: 200, valorUnitario: 0.00 },
+        { id: '4', nome: 'Água Galão', qtd: 50, valorUnitario: 0.00 },
+        { id: '5', nome: 'Café (Garrafa / Bule)', qtd: 50, valorUnitario: 0.00 },
+        { id: '6', nome: 'Água Quente', qtd: 50, valorUnitario: 0.00 },
+        { id: '7', nome: 'Leite', qtd: 50, valorUnitario: 0.00 }
     ];
 
     document.getElementById('dataConsumo').valueAsDate = new Date();
 
-    // SINCRONIZAÇÃO EM TEMPO REAL COM O FIREBASE
+    // SINCRONIZAÇÃO EM TEMPO REAL
     database.ref('estoque').on('value', (snapshot) => {
         const data = snapshot.val();
         if (data) {
             estoque = Array.isArray(data) ? data : Object.values(data);
+            estoque.forEach(item => {
+                if (item.valorUnitario === undefined) item.valorUnitario = 0;
+            });
         } else {
             estoque = estoquePadrao;
             database.ref('estoque').set(estoquePadrao);
@@ -455,7 +422,7 @@
     database.ref('fichas').on('value', (snapshot) => {
         const data = snapshot.val();
         fichas = data ? Object.values(data) : [];
-        fichas.sort((a, b) => b.id - a.id); // Ordena mais recentes primeiro
+        fichas.sort((a, b) => b.id - a.id);
         renderizarHistorico();
         renderizarFichasPendentes();
     });
@@ -463,6 +430,10 @@
     database.ref('assinaturas').on('value', (snapshot) => {
         assinaturasEventos = snapshot.val() || {};
         renderizarFichasPendentes();
+    });
+
+    database.ref('precosAjustados').on('value', (snapshot) => {
+        precosAjustadosEventos = snapshot.val() || {};
     });
 
     // NAVEGAÇÃO DE ABAS
@@ -485,9 +456,14 @@
         tbody.innerHTML = '';
 
         estoque.forEach(item => {
+            const vUnit = item.valorUnitario || 0;
             tbody.innerHTML += `
                 <tr>
                     <td><strong>${item.nome}</strong> <small style="color:#666;">(Disp: ${item.qtd})</small></td>
+                    <td>
+                        <strong style="color:#2c3e50;">R$ ${vUnit.toFixed(2)}</strong>
+                        <input type="hidden" id="valor_${item.id}" value="${vUnit}">
+                    </td>
                     <td>
                         <input type="number" id="saida_${item.id}" min="0" placeholder="0" 
                             style="width: 75px; padding: 6px; font-weight: bold;" 
@@ -501,6 +477,7 @@
                             onfocus="if(this.value=='0') this.value=''">
                     </td>
                     <td><strong id="total_${item.id}" style="color:var(--primary); font-size:16px;">0</strong></td>
+                    <td><strong id="totalValor_${item.id}" style="color:var(--primary); font-size:16px;">R$ 0,00</strong></td>
                 </tr>
             `;
         });
@@ -509,7 +486,11 @@
     function calcularDiferenca(id) {
         const saida = parseInt(document.getElementById(`saida_${id}`).value, 10) || 0;
         const retorno = parseInt(document.getElementById(`retorno_${id}`).value, 10) || 0;
-        document.getElementById(`total_${id}`).innerText = Math.max(0, saida - retorno);
+        const valorUnit = parseFloat(document.getElementById(`valor_${id}`).value) || 0;
+        const consumido = Math.max(0, saida - retorno);
+        
+        document.getElementById(`total_${id}`).innerText = consumido;
+        document.getElementById(`totalValor_${id}`).innerText = (consumido * valorUnit).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
     }
 
     function formatarDataBR(dataIso) {
@@ -527,112 +508,132 @@
     }
 
     function finalizarELancarConsumo() {
-        const eventoInput = document.getElementById('eventoNome').value.trim();
-        const sala = document.getElementById('salaNome').value;
-        const dataConsumoRaw = document.getElementById('dataConsumo').value;
+    const eventoInput = document.getElementById('eventoNome').value.trim();
+    const sala = document.getElementById('salaNome').value;
+    const dataConsumoRaw = document.getElementById('dataConsumo').value;
 
-        if (!eventoInput || !sala || !dataConsumoRaw) {
-            return alert('Por favor, preencha a Data, Nome do Evento e selecione a Sala.');
-        }
-
-        const eventoKey = eventoInput.toUpperCase();
-        const dataConsumo = formatarDataBR(dataConsumoRaw);
-        let itensConsumidos = [];
-        const dataHoraLancamento = new Date().toLocaleString('pt-BR');
-
-        estoque.forEach(item => {
-            const totalConsumido = parseInt(document.getElementById(`total_${item.id}`).innerText, 10) || 0;
-            if (totalConsumido > 0) {
-                item.qtd = Math.max(0, item.qtd - totalConsumido);
-                itensConsumidos.push({ itemNome: item.nome, qtd: totalConsumido });
-            }
-        });
-
-        if (itensConsumidos.length === 0) return alert('Nenhum consumo foi digitado.');
-
-        const novaFichaId = Date.now().toString();
-        const novaFicha = {
-            id: novaFichaId,
-            dataConsumo: dataConsumo,
-            dataHora: dataHoraLancamento,
-            evento: eventoKey,
-            sala: sala,
-            itens: itensConsumidos
-        };
-
-        // Salva Ficha e Estoque Atualizado no Firebase
-        database.ref('fichas/' + novaFichaId).set(novaFicha);
-        database.ref('estoque').set(estoque);
-
-        alert(`Lançamento da sala ${sala} do dia ${dataConsumo} registrado para o evento "${eventoKey}"!`);
-        
-        document.getElementById('salaNome').value = '';
-        renderizarTabelaConsumo();
+    if (!eventoInput || !sala || !dataConsumoRaw) {
+        return alert('Preencha Data, Nome do Evento e Sala.');
     }
 
-    // CONSOLIDAÇÃO E FICHAS PENDENTES
+    const eventoKey = eventoInput.toUpperCase();
+    const dataConsumo = formatarDataBR(dataConsumoRaw);
+    let itensConsumidos = [];
+
+    estoque.forEach(item => {
+        const totalConsumido = parseInt(document.getElementById(`total_${item.id}`).innerText, 10) || 0;
+        const valorUnit = parseFloat(document.getElementById(`valor_${item.id}`).value) || 0;
+        if (totalConsumido > 0) {
+            item.qtd = Math.max(0, item.qtd - totalConsumido);
+            itensConsumidos.push({ itemNome: item.nome, qtd: totalConsumido, valorUnitario: valorUnit });
+        }
+    });
+
+    if (itensConsumidos.length === 0) return alert('Nenhum consumo foi digitado.');
+
+    // --- REGRA DE OURO: VERIFICA SE O LOTE ANTERIOR JÁ FOI ASSINADO ---
+    let lote = 1;
+    while (assinaturasEventos[`${eventoKey}_LOTE_${lote}`]) {
+        lote++;
+    }
+    const loteChave = `${eventoKey}_LOTE_${lote}`;
+    // -----------------------------------------------------------------
+
+    const novaFichaId = Date.now().toString();
+    const novaFicha = {
+        id: novaFichaId,
+        loteChave: loteChave, // Salva o vínculo com a rodada atual
+        evento: eventoKey,
+        dataConsumo: dataConsumo,
+        sala: sala,
+        itens: itensConsumidos
+    };
+
+    database.ref('fichas/' + novaFichaId).set(novaFicha);
+    database.ref('estoque').set(estoque);
+
+    alert(`Lançamento registrado com sucesso! (Agrupado na Rodada ${lote})`);
+    document.getElementById('salaNome').value = '';
+    renderizarTabelaConsumo();
+    }
+
+    // CONSOLIDAÇÃO
     function obterEventosConsolidados() {
-        let eventosMap = {};
+    let eventosMap = {};
 
-        fichas.forEach(f => {
-            const evKey = f.evento.toUpperCase();
-            if(!eventosMap[evKey]) {
-                eventosMap[evKey] = {
-                    nome: evKey,
-                    salas: new Set(),
-                    totalLancamentos: 0,
-                    itensTotais: {},
-                    fichas: []
-                };
-            }
+    fichas.forEach(f => {
+        // Pega o nome real do evento da ficha (garante que não fique undefined)
+        const nomeEvento = f.evento ? f.evento.toUpperCase() : 'EVENTO SEM NOME';
+        const loteChave = f.loteChave || `${nomeEvento}_LOTE_1`;
+        
+        if (!eventosMap[loteChave]) {
+            const partes = loteChave.split('_LOTE_');
+            const numLote = partes[partes.length - 1] || '1';
 
-            eventosMap[evKey].salas.add(f.sala);
-            eventosMap[evKey].totalLancamentos++;
-            eventosMap[evKey].fichas.push(f);
-
-            f.itens.forEach(i => {
-                eventosMap[evKey].itensTotais[i.itemNome] = (eventosMap[evKey].itensTotais[i.itemNome] || 0) + i.qtd;
-            });
-        });
-
-        return eventosMap;
-    }
-
-    function renderizarFichasPendentes() {
-        const tbody = document.getElementById('tabelaPendentesBody');
-        if (!tbody) return;
-        tbody.innerHTML = '';
-
-        const eventosMap = obterEventosConsolidados();
-        const chavesEventos = Object.keys(eventosMap);
-
-        if (chavesEventos.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Nenhum evento registrado ainda.</td></tr>';
-            return;
+            eventosMap[loteChave] = {
+                loteChave: loteChave,
+                nomeEvento: nomeEvento,
+                numLote: numLote,
+                salas: new Set(),
+                totalLancamentos: 0,
+                itensTotais: {},
+                fichas: []
+            };
         }
 
-        chavesEventos.forEach(evKey => {
-            const ev = eventosMap[evKey];
-            const estaAssinado = !!assinaturasEventos[evKey];
-            
-            const statusTag = estaAssinado 
-                ? '<span class="badge badge-signed">✅ EVENTO ASSINADO</span>' 
-                : '<span class="badge badge-pending">⏳ AGUARDANDO ASSINATURA</span>';
+        eventosMap[loteChave].salas.add(f.sala);
+        eventosMap[loteChave].totalLancamentos++;
+        eventosMap[loteChave].fichas.push(f);
 
-            const btnAssinaturaText = estaAssinado ? '🔍 Ver / Reassinar' : '✍️ Coletar Assinatura Única';
-            const salasLista = Array.from(ev.salas).join(', ');
+        f.itens.forEach(i => {
+            const precoAjustado = precosAjustadosEventos[loteChave]?.[i.itemNome];
+            const vUnit = precoAjustado !== undefined ? precoAjustado : (i.valorUnitario || 0);
 
-            tbody.innerHTML += `
-                <tr>
-                    <td><strong>${ev.nome}</strong></td>
-                    <td>${salasLista}</td>
-                    <td><span class="badge" style="background:#e2e8f0; color:#333;">${ev.totalLancamentos} lançamento(s)</span></td>
-                    <td>${statusTag}</td>
-                    <td>
-                        <button class="btn btn-success" onclick="abrirModalAssinatura('${evKey}')">${btnAssinaturaText}</button>
-                        <button class="btn btn-secondary" onclick="imprimirComprovante('${evKey}')">🖨️ PDF Detalhado</button>
-                    </td>
-                </tr>
+            if (!eventosMap[loteChave].itensTotais[i.itemNome]) {
+                eventosMap[loteChave].itensTotais[i.itemNome] = { qtd: 0, valorUnitario: vUnit };
+            }
+            eventosMap[loteChave].itensTotais[i.itemNome].qtd += i.qtd;
+        });
+    });
+
+    return eventosMap;
+}
+
+function renderizarFichasPendentes() {
+    const tbody = document.getElementById('tabelaPendentesBody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    const eventosMap = obterEventosConsolidados();
+    const chavesLotes = Object.keys(eventosMap);
+
+    if (chavesLotes.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Nenhum evento registrado ainda.</td></tr>';
+        return;
+    }
+
+    chavesLotes.forEach(loteChave => {
+        const ev = eventosMap[loteChave];
+        const estaAssinado = !!assinaturasEventos[loteChave];
+        
+        const statusTag = estaAssinado 
+            ? '<span class="badge badge-signed">✅ ASSINADO E CONCLUÍDO</span>' 
+            : '<span class="badge badge-pending">⏳ AGUARDANDO ASSINATURA</span>';
+
+        // Se for Lote 1 exibe o nome normal. Se for Lote 2+, exibe Nome (Rodada 2)
+        const tituloExibicao = ev.numLote === '1' ? ev.nomeEvento : `${ev.nomeEvento} (Rodada ${ev.numLote})`;
+
+        tbody.innerHTML += `
+            <tr>
+                <td><strong>${tituloExibicao}</strong></td>
+                <td>${Array.from(ev.salas).join(', ')}</td>
+                <td><span class="badge" style="background:#e2e8f0; color:#333;">${ev.totalLancamentos} lançamento(s)</span></td>
+                <td>${statusTag}</td>
+                <td>
+                    <button class="btn btn-success" onclick="abrirModalAssinatura('${loteChave}')">${estaAssinado ? '🔍 Ver Extrato' : '✍️ Coletar Assinatura Única'}</button>
+                    <button class="btn btn-secondary" onclick="gerarPDFDetalhado('${loteChave}')">🖨️ PDF Detalhado</button>
+                </td>
+            </tr>
             `;
         });
     }
@@ -673,9 +674,13 @@
         }
 
         fichasFiltradas.forEach(f => {
-            const chipsItens = f.itens.map(i => `
-                <span class="item-chip">${i.itemNome}: <strong>${i.qtd}</strong></span>
-            `).join('');
+            const evKey = f.evento.toUpperCase();
+            const chipsItens = f.itens.map(i => {
+                const precoAjustado = precosAjustadosEventos[evKey]?.[i.itemNome];
+                const vUnit = precoAjustado !== undefined ? precoAjustado : (i.valorUnitario !== undefined ? i.valorUnitario : 0);
+                const totalItem = i.qtd * vUnit;
+                return `<span class="item-chip">${i.itemNome}: <strong>${i.qtd}</strong> (R$ ${totalItem.toFixed(2)})</span>`;
+            }).join('');
 
             container.innerHTML += `
                 <div class="historico-card">
@@ -710,16 +715,18 @@
         }
     }
 
-    // CADASTRO E EDIÇÃO DE ESTOQUE
+    // ESTOQUE
     function cadastrarItemEstoque() {
         const nome = document.getElementById('novoItemNome').value.trim();
         const qtd = parseInt(document.getElementById('novoItemQtd').value, 10) || 0;
+        const valorUnitario = parseFloat(document.getElementById('novoItemValor').value) || 0;
         if (!nome) return alert('Digite o nome do item.');
         
-        estoque.push({ id: Date.now().toString(), nome, qtd });
+        estoque.push({ id: Date.now().toString(), nome, qtd, valorUnitario });
         database.ref('estoque').set(estoque);
         
         document.getElementById('novoItemNome').value = '';
+        document.getElementById('novoItemValor').value = '0.00';
     }
 
     function renderizarEstoque() {
@@ -728,11 +735,13 @@
         tbody.innerHTML = '';
 
         estoque.forEach(item => {
+            const vUnit = item.valorUnitario || 0;
             tbody.innerHTML += `
                 <tr>
                     <td>#${item.id.slice(-4)}</td>
                     <td><strong>${item.nome}</strong></td>
                     <td>${item.qtd}</td>
+                    <td>R$ ${vUnit.toFixed(2)}</td>
                     <td style="text-align: center;">
                         <button class="btn btn-warning btn-sm" onclick="abrirModalEditarEstoque('${item.id}')">✏️ Editar</button>
                         <button class="btn btn-danger btn-sm" onclick="excluirItemEstoque('${item.id}')">🗑️ Excluir</button>
@@ -748,6 +757,7 @@
         document.getElementById('editItemId').value = item.id;
         document.getElementById('editItemNome').value = item.nome;
         document.getElementById('editItemQtd').value = item.qtd;
+        document.getElementById('editItemValor').value = (item.valorUnitario || 0).toFixed(2);
         document.getElementById('modalEditarEstoque').style.display = 'flex';
     }
 
@@ -759,13 +769,15 @@
         const id = document.getElementById('editItemId').value;
         const novoNome = document.getElementById('editItemNome').value.trim();
         const novaQtd = parseInt(document.getElementById('editItemQtd').value, 10);
+        const novoValor = parseFloat(document.getElementById('editItemValor').value);
 
-        if(!novoNome || isNaN(novaQtd)) return alert('Preencha o nome e a quantidade corretamente.');
+        if(!novoNome || isNaN(novaQtd) || isNaN(novoValor)) return alert('Preencha os campos corretamente.');
 
         const item = estoque.find(i => i.id === id);
         if(item) {
             item.nome = novoNome;
             item.qtd = Math.max(0, novaQtd);
+            item.valorUnitario = Math.max(0, novoValor);
             database.ref('estoque').set(estoque);
             fecharModalEditar();
         }
@@ -778,10 +790,73 @@
         }
     }
 
-    // ASSINATURA E MODAL DETALHADO
+    // MODAL DE ASSINATURA E RECALCULO EM TEMPO REAL
     const canvas = document.getElementById('canvasAssinatura');
     const ctx = canvas.getContext('2d');
     let desenhando = false;
+
+    function atualizarCalculosModalAssinatura() {
+        if (!eventoAtualNome) return;
+        const eventosMap = obterEventosConsolidados();
+        const ev = eventosMap[eventoAtualNome];
+        if (!ev) return;
+
+        let mapaPrecosAtualizados = {};
+
+        // 1. Ler todos os novos preços da tabela de Total Geral
+        Object.keys(ev.itensTotais).forEach(itemNome => {
+            const safeId = itemNome.replace(/\s+/g, '_');
+            const inputVal = document.getElementById(`modal_price_${safeId}`);
+            let valUnit = inputVal ? parseFloat(inputVal.value) || 0 : ev.itensTotais[itemNome].valorUnitario;
+            
+            mapaPrecosAtualizados[itemNome] = valUnit;
+
+            // Atualiza o subtotal na linha do item
+            const qtdTotal = ev.itensTotais[itemNome].qtd;
+            const celulaTotal = document.getElementById(`modal_total_${safeId}`);
+            if (celulaTotal) {
+                celulaTotal.innerText = (qtdTotal * valUnit).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            }
+        });
+
+        // Grava no estado local
+        precosAjustadosEventos[eventoAtualNome] = mapaPrecosAtualizados;
+
+        // 2. RECALCULAR E REEXIBIR AS TABELAS SUPERIORES (Blocos de Dia / Sala)
+        ev.fichas.forEach(f => {
+            let totalDia = 0;
+            f.itens.forEach(i => {
+                const vUnit = mapaPrecosAtualizados[i.itemNome] !== undefined ? mapaPrecosAtualizados[i.itemNome] : (i.valorUnitario || 0);
+                const vTotal = i.qtd * vUnit;
+                totalDia += vTotal;
+
+                // Atualiza a célula do Valor Unitário do dia
+                const celulaUnitDia = document.getElementById(`unit_${f.id}_${i.itemNome.replace(/\s+/g, '_')}`);
+                if (celulaUnitDia) {
+                    celulaUnitDia.innerText = `R$ ${vUnit.toFixed(2)}`;
+                }
+
+                // Atualiza a célula do Valor Total do dia
+                const celulaTotalDia = document.getElementById(`tot_${f.id}_${i.itemNome.replace(/\s+/g, '_')}`);
+                if (celulaTotalDia) {
+                    celulaTotalDia.innerText = `R$ ${vTotal.toFixed(2)}`;
+                }
+            });
+        });
+
+        // 3. RECALCULAR O TOTAL GERAL DO EVENTO
+        let totalGeralGeral = 0;
+        Object.keys(ev.itensTotais).forEach(itemNome => {
+            const qtdTotal = ev.itensTotais[itemNome].qtd;
+            const vUnit = mapaPrecosAtualizados[itemNome];
+            totalGeralGeral += (qtdTotal * vUnit);
+        });
+
+        const boxTotal = document.querySelector('.total-geral-box');
+        if (boxTotal) {
+            boxTotal.innerHTML = `📊 TOTAL GERAL CONSOLIDADO DO EVENTO: ${totalGeralGeral.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`;
+        }
+    }
 
     function abrirModalAssinatura(evKey) {
         eventoAtualNome = evKey;
@@ -789,19 +864,31 @@
         const ev = eventosMap[evKey];
         if (!ev) return;
 
+        const estaAssinado = !!assinaturasEventos[evKey];
+
         document.getElementById('resumoEvento').innerText = ev.nome;
         document.getElementById('resumoSalas').innerText = Array.from(ev.salas).join(', ');
 
         const diasContainer = document.getElementById('detalhamentoDiasContainer');
         diasContainer.innerHTML = '';
 
+        // Renderiza blocos superiores de cada ficha
         ev.fichas.forEach((f) => {
-            let linhasItens = f.itens.map(i => `
-                <tr>
-                    <td style="text-align:left;">${i.itemNome}</td>
-                    <td style="text-align:center; font-weight:bold;">${i.qtd}</td>
-                </tr>
-            `).join('');
+            let linhasItens = f.itens.map(i => {
+                const precoAjustado = precosAjustadosEventos[evKey]?.[i.itemNome];
+                const vUnit = precoAjustado !== undefined ? precoAjustado : (i.valorUnitario !== undefined ? i.valorUnitario : 0);
+                const vTotal = i.qtd * vUnit;
+                const safeItemName = i.itemNome.replace(/\s+/g, '_');
+
+                return `
+                    <tr>
+                        <td style="text-align:left;">${i.itemNome}</td>
+                        <td style="text-align:center; font-weight:bold;">${i.qtd}</td>
+                        <td id="unit_${f.id}_${safeItemName}" style="text-align:center;">R$ ${vUnit.toFixed(2)}</td>
+                        <td id="tot_${f.id}_${safeItemName}" style="text-align:right; font-weight:bold;">R$ ${vTotal.toFixed(2)}</td>
+                    </tr>
+                `;
+            }).join('');
 
             diasContainer.innerHTML += `
                 <div class="dia-bloco">
@@ -813,7 +900,9 @@
                         <thead>
                             <tr>
                                 <th style="text-align:left;">Item Consumido</th>
-                                <th style="text-align:center; width: 120px;">Qtd</th>
+                                <th style="text-align:center; width: 80px;">Qtd</th>
+                                <th style="text-align:center; width: 110px;">Valor Unit.</th>
+                                <th style="text-align:right; width: 110px;">Valor Total</th>
                             </tr>
                         </thead>
                         <tbody>${linhasItens}</tbody>
@@ -822,29 +911,60 @@
             `;
         });
 
+        // Renderiza Tabela Inferior do Total Geral Consolidado
         const tbodyTotalGeral = document.getElementById('resumoTotalGeralBody');
         tbodyTotalGeral.innerHTML = '';
         
         Object.keys(ev.itensTotais).forEach(itemNome => {
+            const itemData = ev.itensTotais[itemNome];
+            const safeId = itemNome.replace(/\s+/g, '_');
+            const precoAjustado = precosAjustadosEventos[evKey]?.[itemNome];
+            const vUnit = precoAjustado !== undefined ? precoAjustado : itemData.valorUnitario;
+
             tbodyTotalGeral.innerHTML += `
                 <tr>
                     <td style="text-align:left; font-weight:bold;">${itemNome}</td>
-                    <td style="text-align:center; font-weight:bold; color:var(--primary); font-size:15px;">${ev.itensTotais[itemNome]}</td>
+                    <td style="text-align:center; font-weight:bold; color:var(--primary); font-size:15px;">${itemData.qtd}</td>
+                    <td style="text-align:center;">
+                        <input type="number" id="modal_price_${safeId}" step="0.01" value="${vUnit.toFixed(2)}" 
+                            style="width: 90px; padding: 4px; font-weight: bold; text-align: center;" 
+                            oninput="atualizarCalculosModalAssinatura()" ${estaAssinado ? 'disabled' : ''}>
+                    </td>
+                    <td id="modal_total_${safeId}" style="text-align:right; font-weight:bold; color:var(--primary); font-size:15px;">
+                        R$ ${(itemData.qtd * vUnit).toFixed(2)}
+                    </td>
                 </tr>
             `;
         });
+
+        atualizarCalculosModalAssinatura();
 
         document.getElementById('modalAssinatura').style.display = 'flex';
 
         canvas.width = canvas.parentElement.clientWidth - 50;
         canvas.height = 160;
-        
-        if(assinaturasEventos[evKey]) {
+
+        // CONTROLE DE SEGURANÇA SE JÁ ESTIVER ASSINADO
+        const btnLimpar = document.getElementById('btnLimparAssinatura');
+        const btnSalvar = document.getElementById('btnSalvarAssinatura');
+        const tituloAssinatura = document.getElementById('tituloAssinatura');
+
+        if(estaAssinado) {
             let img = new Image();
             img.onload = function() { ctx.drawImage(img, 0, 0); };
             img.src = assinaturasEventos[evKey];
+
+            // Bloqueia interações no Canvas e Botões
+            canvas.style.pointerEvents = 'none';
+            btnLimpar.style.display = 'none';
+            btnSalvar.style.display = 'none';
+            tituloAssinatura.innerText = "🔒 Assinatura Homologada e Fechada (Somente Leitura):";
         } else {
             limparCanvas();
+            canvas.style.pointerEvents = 'auto';
+            btnLimpar.style.display = 'inline-flex';
+            btnSalvar.style.display = 'inline-flex';
+            tituloAssinatura.innerText = "✍️ Assinatura de Aceite e Fechamento Final do Evento:";
         }
     }
 
@@ -865,9 +985,16 @@
         return { x: clientX - rect.left, y: clientY - rect.top };
     }
 
-    function iniciarDesenho(e) { desenhando = true; ctx.beginPath(); const pos = getPos(e); ctx.moveTo(pos.x, pos.y); }
+    function iniciarDesenho(e) { 
+        if (assinaturasEventos[eventoAtualNome]) return; // Impede desenhar se assinado
+        desenhando = true; 
+        ctx.beginPath(); 
+        const pos = getPos(e); 
+        ctx.moveTo(pos.x, pos.y); 
+    }
+
     function desenhar(e) {
-        if (!desenhando) return;
+        if (!desenhando || assinaturasEventos[eventoAtualNome]) return;
         e.preventDefault();
         const pos = getPos(e);
         ctx.lineWidth = 3;
@@ -876,6 +1003,7 @@
         ctx.lineTo(pos.x, pos.y);
         ctx.stroke();
     }
+    
     function pararDesenho() { desenhando = false; }
 
     canvas.addEventListener('mousedown', iniciarDesenho);
@@ -888,10 +1016,20 @@
 
     function salvarAssinatura() {
         if (eventoAtualNome) {
+            if (assinaturasEventos[eventoAtualNome]) {
+                return alert('Este evento já foi assinado e encerrado.');
+            }
+
             const dataUrl = canvas.toDataURL('image/png');
+            
+            // 1. Salva a assinatura e os preços negociados no Firebase
             database.ref('assinaturas/' + eventoAtualNome).set(dataUrl);
+            if (precosAjustadosEventos[eventoAtualNome]) {
+                database.ref('precosAjustados/' + eventoAtualNome).set(precosAjustadosEventos[eventoAtualNome]);
+            }
+
             fecharModal();
-            alert(`Assinatura do evento "${eventoAtualNome}" salva no Firebase!`);
+            alert(`Assinatura do evento "${eventoAtualNome}" gravada com sucesso! O evento está travado para alterações.`);
         }
     }
 
@@ -904,12 +1042,19 @@
         const win = window.open('', '', 'width=850,height=750');
         
         let detalhamentoHtml = ev.fichas.map(f => {
-            let itens = f.itens.map(i => `
-                <tr>
-                    <td style="text-align:left; padding:6px; border-bottom:1px solid #e2e8f0;">${i.itemNome}</td>
-                    <td style="padding:6px; font-weight:bold; text-align:center; border-bottom:1px solid #e2e8f0;">${i.qtd}</td>
-                </tr>
-            `).join('');
+            let itens = f.itens.map(i => {
+                const precoAjustado = precosAjustadosEventos[evKey]?.[i.itemNome];
+                const vUnit = precoAjustado !== undefined ? precoAjustado : (i.valorUnitario !== undefined ? i.valorUnitario : 0);
+                const vTotal = i.qtd * vUnit;
+                return `
+                    <tr>
+                        <td style="text-align:left; padding:6px; border-bottom:1px solid #e2e8f0;">${i.itemNome}</td>
+                        <td style="padding:6px; font-weight:bold; text-align:center; border-bottom:1px solid #e2e8f0;">${i.qtd}</td>
+                        <td style="padding:6px; text-align:center; border-bottom:1px solid #e2e8f0;">R$ ${vUnit.toFixed(2)}</td>
+                        <td style="padding:6px; font-weight:bold; text-align:right; border-bottom:1px solid #e2e8f0;">R$ ${vTotal.toFixed(2)}</td>
+                    </tr>
+                `;
+            }).join('');
 
             return `
                 <div style="margin-bottom:15px; border:1px solid #cbd5e1; border-radius:6px; overflow:hidden;">
@@ -920,7 +1065,9 @@
                         <thead>
                             <tr style="background:#f1f5f9; color:#475569; font-size:12px;">
                                 <th style="text-align:left; padding:6px;">Item Consumido</th>
-                                <th style="text-align:center; padding:6px; width:120px;">Quantidade</th>
+                                <th style="text-align:center; padding:6px; width:80px;">Quantidade</th>
+                                <th style="text-align:center; padding:6px; width:110px;">Valor Unit.</th>
+                                <th style="text-align:right; padding:6px; width:110px;">Valor Total</th>
                             </tr>
                         </thead>
                         <tbody>${itens}</tbody>
@@ -929,12 +1076,23 @@
             `;
         }).join('');
 
-        let totalGeralHtml = Object.keys(ev.itensTotais).map(itemNome => `
-            <tr>
-                <td style="text-align:left; padding:8px; font-weight:bold; border-bottom:1px solid #cbd5e1;">${itemNome}</td>
-                <td style="padding:8px; font-weight:bold; font-size:14px; color:#00463f; text-align:center; border-bottom:1px solid #cbd5e1;">${ev.itensTotais[itemNome]}</td>
-            </tr>
-        `).join('');
+        let totalGeralAcumulado = 0;
+        let totalGeralHtml = Object.keys(ev.itensTotais).map(itemNome => {
+            const itemData = ev.itensTotais[itemNome];
+            const precoAjustado = precosAjustadosEventos[evKey]?.[itemNome];
+            const vUnit = precoAjustado !== undefined ? precoAjustado : itemData.valorUnitario;
+            const vTotal = itemData.qtd * vUnit;
+            totalGeralAcumulado += vTotal;
+
+            return `
+                <tr>
+                    <td style="text-align:left; padding:8px; font-weight:bold; border-bottom:1px solid #cbd5e1;">${itemNome}</td>
+                    <td style="padding:8px; font-weight:bold; font-size:14px; color:#00463f; text-align:center; border-bottom:1px solid #cbd5e1;">${itemData.qtd}</td>
+                    <td style="padding:8px; text-align:center; border-bottom:1px solid #cbd5e1;">R$ ${vUnit.toFixed(2)}</td>
+                    <td style="padding:8px; font-weight:bold; font-size:14px; color:#00463f; text-align:right; border-bottom:1px solid #cbd5e1;">R$ ${vTotal.toFixed(2)}</td>
+                </tr>
+            `;
+        }).join('');
 
         const assinaturaImg = assinaturasEventos[evKey];
         const imgAssinaturaHtml = assinaturaImg 
@@ -982,15 +1140,21 @@
                 ${detalhamentoHtml}
 
                 <div class="section-title">2. Total Geral Consolidado</div>
-                <table style="border: 1px solid #cbd5e1; margin-bottom: 20px;">
+                <table style="border: 1px solid #cbd5e1; margin-bottom: 10px;">
                     <thead>
                         <tr>
                             <th style="text-align:left;">Item Consumido</th>
-                            <th style="text-align:center; width: 140px;">Quantidade Total</th>
+                            <th style="text-align:center; width: 100px;">Quantidade</th>
+                            <th style="text-align:center; width: 120px;">Valor Unit.</th>
+                            <th style="text-align:right; width: 120px;">Valor Total</th>
                         </tr>
                     </thead>
                     <tbody>${totalGeralHtml}</tbody>
                 </table>
+                
+                <div style="text-align: right; font-size: 16px; font-weight: bold; color: #00463f; margin-bottom: 20px;">
+                    VALOR TOTAL CONSOLIDADO: ${totalGeralAcumulado.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                </div>
 
                 <div class="signatures-container">
                     <div class="signature-box">
@@ -1014,12 +1178,158 @@
     }
 
     function limparHistorico() {
-        if (confirm('Atenção: deseja apagar permanentemente todas as fichas e assinaturas salvas no Firebase?')) {
+        if (confirm('Atenção: deseja apagar permanentemente todas as fichas, preços e assinaturas salvas no Firebase?')) {
             database.ref('fichas').remove();
             database.ref('assinaturas').remove();
+            database.ref('precosAjustados').remove();
         }
     }
+
+function gerarPDFDetalhado(loteChave) {
+    const eventosMap = obterEventosConsolidados();
+    const ev = eventosMap[loteChave];
+
+    if (!ev) {
+        return alert("Não foram encontrados dados para gerar o PDF deste lote.");
+    }
+
+    const estaAssinado = !!assinaturasEventos[loteChave];
+    const assinaturaDataUrl = assinaturasEventos[loteChave] || null;
+    const tituloExibicao = ev.numLote === '1' ? ev.nomeEvento : `${ev.nomeEvento} (Rodada ${ev.numLote})`;
+
+    const win = window.open('', '_blank');
+    if (!win) return alert("Por favor, permita pop-ups no seu navegador para gerar o PDF.");
+
+    let htmlDias = '';
+    ev.fichas.forEach(f => {
+        let linhasItens = f.itens.map(i => {
+            const precoAjustado = precosAjustadosEventos[loteChave]?.[i.itemNome];
+            const vUnit = precoAjustado !== undefined ? precoAjustado : (i.valorUnitario || 0);
+            return `
+                <tr>
+                    <td>${i.itemNome}</td>
+                    <td style="text-align:center;">${i.qtd}</td>
+                    <td style="text-align:center;">R$ ${vUnit.toFixed(2)}</td>
+                    <td style="text-align:right;">R$ ${(i.qtd * vUnit).toFixed(2)}</td>
+                </tr>
+            `;
+        }).join('');
+
+        htmlDias += `
+            <div style="border:1px solid #ccc; padding:10px; margin-bottom:12px; border-radius:4px;">
+                <div style="font-weight:bold; color:#00463f; border-bottom:1px solid #eee; padding-bottom:4px; margin-bottom:8px; display:flex; justify-content:space-between;">
+                    <span>📅 Data: ${f.dataConsumo}</span>
+                    <span>📍 Sala: ${f.sala}</span>
+                </div>
+                <table style="width:100%; border-collapse:collapse; font-size:12px;">
+                    <thead>
+                        <tr style="background:#f4f6f8;">
+                            <th style="text-align:left; padding:4px;">Item Consumido</th>
+                            <th style="text-align:center; padding:4px;">Qtd</th>
+                            <th style="text-align:center; padding:4px;">Valor Unit.</th>
+                            <th style="text-align:right; padding:4px;">Valor Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>${linhasItens}</tbody>
+                </table>
+            </div>
+        `;
+    });
+
+    let htmlTotalGeral = '';
+    let totalGeralValor = 0;
+    Object.keys(ev.itensTotais).forEach(itemNome => {
+        const itemData = ev.itensTotais[itemNome];
+        const precoAjustado = precosAjustadosEventos[loteChave]?.[itemNome];
+        const vUnit = precoAjustado !== undefined ? precoAjustado : itemData.valorUnitario;
+        const totalLinha = itemData.qtd * vUnit;
+        totalGeralValor += totalLinha;
+
+        htmlTotalGeral += `
+            <tr>
+                <td style="padding:6px; font-weight:bold;">${itemNome}</td>
+                <td style="padding:6px; text-align:center; font-weight:bold;">${itemData.qtd}</td>
+                <td style="padding:6px; text-align:center;">R$ ${vUnit.toFixed(2)}</td>
+                <td style="padding:6px; text-align:right; font-weight:bold;">R$ ${totalLinha.toFixed(2)}</td>
+            </tr>
+        `;
+    });
+
+    const htmlAssinatura = estaAssinado && assinaturaDataUrl
+        ? `<div style="margin-top:20px; text-align:center; border-top:1px dashed #ccc; padding-top:15px;">
+             <p style="font-size:12px; font-weight:bold; color:#00463f; margin-bottom:5px;">Assinatura de Aceite e Fechamento Final:</p>
+             <img src="${assinaturaDataUrl}" style="max-height:100px; border:1px solid #ddd; padding:5px; border-radius:4px;">
+           </div>`
+        : `<div style="margin-top:30px; text-align:center; font-style:italic; color:#777; border-top:1px dashed #ccc; padding-top:15px;">
+             (Documento pendente de assinatura do cliente)
+           </div>`;
+
+    win.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Extrato A&B - ${tituloExibicao}</title>
+            <style>
+                body { font-family: 'Segoe UI', Tahoma, Arial, sans-serif; padding: 20px; color: #333; }
+                .header { border-bottom: 3px solid #00463f; padding-bottom: 10px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+                .title { font-size: 18px; font-weight: bold; color: #00463f; }
+                .info-box { background: #e8f0fe; padding: 10px; border-radius: 4px; font-size: 13px; margin-bottom: 15px; border-left: 4px solid #00463f; }
+                table { width: 100%; border-collapse: collapse; margin-top: 5px; }
+                th, td { border-bottom: 1px solid #ddd; }
+                th { background: #00463f; color: #fff; text-align: left; padding: 6px; font-size: 12px; }
+                .total-box { background: #00332e; color: #fff; padding: 8px; border-radius: 4px; font-weight: bold; text-align: center; margin-top: 15px; }
+            </style>
+        </head>
+        <body>
+            <div class="header">
+                <div class="title">Bourbon Hotéis & Resorts - Extrato de Consumo A&B</div>
+                <div style="font-size:12px; color:#666;">Emitido em: ${new Date().toLocaleDateString('pt-BR')}</div>
+            </div>
+
+            <div class="info-box">
+                <div><strong>Evento / Rodada:</strong> ${tituloExibicao}</div>
+                <div><strong>Salas Atendidas:</strong> ${Array.from(ev.salas).join(', ')}</div>
+            </div>
+
+            <h4 style="color:#00463f; margin-bottom:8px;">Detalhamento por Data / Ambiente</h4>
+            ${htmlDias}
+
+            <div class="total-box">CONSOLIDADO GERAL DE CONSUMO</div>
+            <table style="margin-bottom:15px; border:1px solid #00463f; font-size:13px;">
+                <thead>
+                    <tr>
+                        <th>Descrição do Item</th>
+                        <th style="text-align:center; width:100px;">Qtd Consumida</th>
+                        <th style="text-align:center; width:110px;">Valor Unit.</th>
+                        <th style="text-align:right; width:110px;">Valor Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${htmlTotalGeral}
+                </tbody>
+            </table>
+
+            <div style="text-align:right; font-size:15px; font-weight:bold; color:#00463f; margin-bottom:20px;">
+                Valor Total Concluído: ${totalGeralValor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+            </div>
+
+            ${htmlAssinatura}
+
+            <script>
+                window.onload = function() {
+                    setTimeout(() => { window.print(); }, 500);
+                };
+            <\/script>
+        </body>
+        </html>
+    `);
+
+    win.document.close();
+}
+
 </script>
+
+
 
 </body>
 </html>
