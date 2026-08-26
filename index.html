@@ -10,7 +10,7 @@
             --primary-dark: #00332e;  /* Verde Escuro */
             --secondary: #2980b9;     /* Azul de Ação/Destaque */
             --success: #27ae60;
-            --warning: #f39c12;
+            --warning: #e67e22;
             --danger: #c0392b;
             --light: #f4f6f8;
             --dark: #2c3e50;
@@ -57,6 +57,13 @@
         .badge { padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
         .badge-pending { background: #ffeaa7; color: #d63031; }
         .badge-signed { background: #badc58; color: #075e54; }
+
+        /* Estilo da Lista Aberta de Atendimentos */
+        .painel-abertos { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; margin-top: 10px; }
+        .card-aberto { background: #fff; border: 2px solid #e2e8f0; border-left: 5px solid var(--warning); border-radius: 6px; padding: 12px; display: flex; flex-direction: column; justify-content: space-between; transition: transform 0.1s, border-color 0.2s; }
+        .card-aberto:hover { border-color: var(--warning); transform: translateY(-2px); }
+        .card-aberto-header { font-weight: bold; font-size: 15px; color: var(--primary); margin-bottom: 4px; }
+        .card-aberto-info { font-size: 13px; color: #555; margin-bottom: 10px; line-height: 1.4; }
 
         /* Histórico Agrupado */
         .historico-card { background: #fff; border: 1px solid #cbd5e1; border-left: 5px solid var(--primary); border-radius: 6px; padding: 12px 15px; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
@@ -115,8 +122,28 @@
 
     <!-- ABA 1: CONSUMO -->
     <div id="abaConsumo" class="tab-content active">
+        <!-- SELEÇÃO DE ETAPA DE PROCESSO -->
+        <div class="card no-print" style="background: #e8f0fe; border-left: 5px solid var(--secondary);">
+            <div class="form-group">
+                <label style="color: var(--secondary); font-size: 15px;">📋 Selecione a Etapa do Atendimento:</label>
+                <select id="etapaSelect" onchange="alternarEtapaProcesso()" style="font-weight: bold; font-size: 15px; padding: 10px; max-width: 500px;">
+                    <option value="SAIDA">📤 1. Novo Abastecimento / Saída de Materiais</option>
+                    <option value="RETORNO">📥 2. Registrar Devolução de Sobras (Atendimentos em Aberto)</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- PAINEL VISUAL DE ATENDIMENTOS EM ABERTO -->
+        <div id="containerFichasAbertas" class="card no-print" style="display: none; background: #fff9e6; border: 1px solid #ffeaa7;">
+            <h3 style="color: var(--warning); margin-bottom: 5px;">📂 Atendimentos Aguardando Devolução / Fechamento</h3>
+            <p style="font-size: 13px; color: #666; margin-bottom: 10px;">Clique na ficha correspondente para registrar o retorno e calcular o consumo final.</p>
+            <div id="painelCardsAbertos" class="painel-abertos">
+                <!-- Os cards de atendimento em aberto aparecem aqui dinamicamente -->
+            </div>
+        </div>
+
         <div class="card no-print">
-            <h3>1. Identificação do Evento</h3>
+            <h3 id="tituloIdentificacao">1. Identificação do Evento</h3>
             <div class="grid-form" style="margin-top: 10px;">
                 <div class="form-group">
                     <label>Data do Consumo:</label>
@@ -203,7 +230,7 @@
                 <tbody id="tabelaConsumoBody"></tbody>
             </table>
 
-            <button class="btn btn-success btn-block" onclick="finalizarELancarConsumo()">✅ Salvar Lançamento no Evento</button>
+            <button id="btnSalvarConsumo" class="btn btn-success btn-block" onclick="finalizarELancarConsumo()">📤 Confirmar Abastecimento Inicial</button>
         </div>
     </div>
 
@@ -402,6 +429,7 @@
     let assinaturasEventos = {};
     let precosAjustadosEventos = {}; 
     let eventoAtualNome = null;
+    let fichaEmEdicaoId = null;
 
     const estoquePadrao = [
         { id: '1', nome: 'Água Copo', qtd: 500, valorUnitario: 0.00 },
@@ -437,6 +465,7 @@
         fichas.sort((a, b) => b.id - a.id);
         renderizarHistorico();
         renderizarFichasPendentes();
+        renderizarCardsAbertos();
     });
 
     database.ref('assinaturas').on('value', (snapshot) => {
@@ -447,6 +476,108 @@
     database.ref('precosAjustados').on('value', (snapshot) => {
         precosAjustadosEventos = snapshot.val() || {};
     });
+
+    // LÓGICA DE ETAPAS DO PROCESSO
+    function alternarEtapaProcesso() {
+        const modo = document.getElementById('etapaSelect').value;
+        const containerFichas = document.getElementById('containerFichasAbertas');
+        const btnSalvar = document.getElementById('btnSalvarConsumo');
+
+        if (modo === 'SAIDA') {
+            containerFichas.style.display = 'none';
+            btnSalvar.innerText = "📤 Confirmar Abastecimento Inicial";
+            btnSalvar.className = "btn btn-success btn-block";
+            limparFormularioConsumo();
+            desbloquearCamposCabecalho(true);
+        } else {
+            containerFichas.style.display = 'block';
+            btnSalvar.innerText = "📥 Finalizar Atendimento e Registrar Devoluções";
+            btnSalvar.className = "btn btn-warning btn-block";
+            renderizarCardsAbertos();
+            desbloquearCamposCabecalho(false);
+        }
+    }
+
+    function desbloquearCamposCabecalho(habilitar) {
+        document.getElementById('dataConsumo').disabled = !habilitar;
+        document.getElementById('eventoNome').disabled = !habilitar;
+        document.getElementById('salaNome').disabled = !habilitar;
+    }
+
+    // RENDERIZA A LISTA EM ABERTO DE FORMA VISUAL (CARDS)
+    function renderizarCardsAbertos() {
+        const painel = document.getElementById('painelCardsAbertos');
+        if (!painel) return;
+        painel.innerHTML = '';
+
+        const fichasAbertas = fichas.filter(f => f.statusAtendimento === 'Em Atendimento (Aguardando Devolução)' || f.statusTurno === 'Aguardando Retorno (Manhã)');
+
+        if (fichasAbertas.length === 0) {
+            painel.innerHTML = '<div style="grid-column: 1/-1; color: #888; font-style: italic; padding: 10px;">Não há atendimentos em aberto no momento.</div>';
+            return;
+        }
+
+        fichasAbertas.forEach(f => {
+            const isSelecionado = (fichaEmEdicaoId === f.id);
+            const borderStyle = isSelecionado ? 'border-color: var(--secondary); background: #e8f0fe;' : '';
+            
+            painel.innerHTML += `
+                <div class="card-aberto" style="${borderStyle}">
+                    <div>
+                        <div class="card-aberto-header">${f.evento}</div>
+                        <div class="card-aberto-info">
+                            📍 <strong>Sala:</strong> ${f.sala}<br>
+                            📅 <strong>Data:</strong> ${f.dataConsumo}
+                        </div>
+                    </div>
+                    <button class="btn ${isSelecionado ? 'btn-secondary' : 'btn-warning'} btn-sm" onclick="selecionarFichaDevolucao('${f.id}')">
+                        ${isSelecionado ? '✓ Selecionado' : '📥 Lançar Devolução'}
+                    </button>
+                </div>
+            `;
+        });
+    }
+
+    function selecionarFichaDevolucao(idFicha) {
+        const ficha = fichas.find(f => f.id === idFicha);
+        if (!ficha) return;
+
+        fichaEmEdicaoId = ficha.id;
+        document.getElementById('eventoNome').value = ficha.evento;
+        document.getElementById('salaNome').value = ficha.sala;
+        document.getElementById('dataConsumo').value = converterDataBRparaISO(ficha.dataConsumo);
+
+        // Preenche as saídas e bloqueia
+        estoque.forEach(item => {
+            const inputSaida = document.getElementById(`saida_${item.id}`);
+            const inputRetorno = document.getElementById(`retorno_${item.id}`);
+            
+            const itemFicha = ficha.itensSaida ? ficha.itensSaida.find(i => i.itemNome === item.nome) : null;
+            const qtdSaida = itemFicha ? itemFicha.qtd : 0;
+
+            if (inputSaida) {
+                inputSaida.value = qtdSaida;
+                inputSaida.disabled = true;
+            }
+            if (inputRetorno) {
+                inputRetorno.value = '';
+                inputRetorno.disabled = false;
+            }
+            calcularDiferenca(item.id);
+        });
+
+        renderizarCardsAbertos();
+    }
+
+    function limparFormularioConsumo() {
+        fichaEmEdicaoId = null;
+        document.getElementById('eventoNome').value = '';
+        document.getElementById('salaNome').value = '';
+        document.getElementById('dataConsumo').valueAsDate = new Date();
+        desbloquearCamposCabecalho(true);
+        renderizarTabelaConsumo();
+        renderizarCardsAbertos();
+    }
 
     // NAVEGAÇÃO DE ABAS
     function mudarAba(abaId, evt) {
@@ -520,6 +651,7 @@
     }
 
     function finalizarELancarConsumo() {
+        const modoProcesso = document.getElementById('etapaSelect').value;
         const eventoInput = document.getElementById('eventoNome').value.trim();
         const sala = document.getElementById('salaNome').value;
         const dataConsumoRaw = document.getElementById('dataConsumo').value;
@@ -530,65 +662,104 @@
 
         const eventoKey = eventoInput.toUpperCase();
         const dataConsumoStr = formatarDataBR(dataConsumoRaw);
-        let itensConsumidos = [];
 
-        estoque.forEach(item => {
-            const totalConsumido = parseInt(document.getElementById(`total_${item.id}`).innerText, 10) || 0;
-            const valorUnit = parseFloat(document.getElementById(`valor_${item.id}`).value) || 0;
-            if (totalConsumido > 0) {
-                item.qtd = Math.max(0, item.qtd - totalConsumido);
-                itensConsumidos.push({ itemNome: item.nome, qtd: totalConsumido, valorUnitario: valorUnit });
-            }
-        });
-
-        if (itensConsumidos.length === 0) return alert('Nenhum consumo foi digitado.');
-
-        // Busca todos os lotes que já existem para esse evento
-        const fichasDoEvento = fichas.filter(f => f.evento === eventoKey);
-        let loteNumero = 1;
-
-        if (fichasDoEvento.length > 0) {
-            let maiorLote = 1;
-            fichasDoEvento.forEach(f => {
-                if (f.loteChave) {
-                    const partes = f.loteChave.split('_LOTE_');
-                    if (partes.length > 1) {
-                        const num = parseInt(partes[1], 10);
-                        if (num > maiorLote) maiorLote = num;
-                    }
+        // ETAPA 1: ABASTECIMENTO / SAÍDA
+        if (modoProcesso === 'SAIDA') {
+            let itensSaida = [];
+            estoque.forEach(item => {
+                const qtdSaida = parseInt(document.getElementById(`saida_${item.id}`).value, 10) || 0;
+                const valorUnit = parseFloat(document.getElementById(`valor_${item.id}`).value) || 0;
+                if (qtdSaida > 0) {
+                    item.qtd = Math.max(0, item.qtd - qtdSaida);
+                    itensSaida.push({ itemNome: item.nome, qtd: qtdSaida, valorUnitario: valorUnit });
                 }
             });
 
-            const loteMaisRecenteChave = `${eventoKey}_LOTE_${maiorLote}`;
-            const loteEstaAssinado = !!assinaturasEventos[loteMaisRecenteChave];
+            if (itensSaida.length === 0) return alert('Digite a quantidade de saída dos itens.');
 
-            // SE O LOTE ANTERIOR JÁ FOI ASSINADO -> ABRE UM NOVO CICLO
-            // SE AINDA NÃO FOI ASSINADO -> CONTINUA JUNTANDO NO MESMO LOTE
-            if (loteEstaAssinado) {
-                loteNumero = maiorLote + 1;
-            } else {
-                loteNumero = maiorLote;
+            const fichasDoEvento = fichas.filter(f => f.evento === eventoKey);
+            let loteNumero = 1;
+
+            if (fichasDoEvento.length > 0) {
+                let maiorLote = 1;
+                fichasDoEvento.forEach(f => {
+                    if (f.loteChave) {
+                        const partes = f.loteChave.split('_LOTE_');
+                        if (partes.length > 1) {
+                            const num = parseInt(partes[1], 10);
+                            if (num > maiorLote) maiorLote = num;
+                        }
+                    }
+                });
+
+                const loteMaisRecenteChave = `${eventoKey}_LOTE_${maiorLote}`;
+                if (!!assinaturasEventos[loteMaisRecenteChave]) {
+                    loteNumero = maiorLote + 1;
+                } else {
+                    loteNumero = maiorLote;
+                }
             }
+
+            const loteChave = `${eventoKey}_LOTE_${loteNumero}`;
+            const novaFichaId = Date.now().toString();
+
+            const novaFicha = {
+                id: novaFichaId,
+                loteChave: loteChave,
+                evento: eventoKey,
+                dataConsumo: dataConsumoStr,
+                sala: sala,
+                statusAtendimento: 'Em Atendimento (Aguardando Devolução)',
+                itensSaida: itensSaida,
+                itens: []
+            };
+
+            database.ref('fichas/' + novaFichaId).set(novaFicha);
+            database.ref('estoque').set(estoque);
+
+            alert(`📤 Abastecimento gravado com sucesso! Ficha aberta no painel para devolução.`);
+            limparFormularioConsumo();
+        } 
+        
+        // ETAPA 2: DEVOLUÇÃO / RETORNO
+        else {
+            if (!fichaEmEdicaoId) return alert('Clique em uma ficha do painel acima para registrar a devolução.');
+
+            const ficha = fichas.find(f => f.id === fichaEmEdicaoId);
+            if (!ficha) return alert('Ficha não encontrada.');
+
+            let itensConsumidosFinal = [];
+
+            estoque.forEach(item => {
+                const itemSaida = ficha.itensSaida ? ficha.itensSaida.find(i => i.itemNome === item.nome) : null;
+                const qtdSaida = itemSaida ? itemSaida.qtd : 0;
+                const qtdRetorno = parseInt(document.getElementById(`retorno_${item.id}`).value, 10) || 0;
+                const valorUnit = parseFloat(document.getElementById(`valor_${item.id}`).value) || 0;
+
+                const qtdConsumida = Math.max(0, qtdSaida - qtdRetorno);
+
+                if (qtdRetorno > 0) {
+                    item.qtd += qtdRetorno;
+                }
+
+                if (qtdConsumida > 0) {
+                    itensConsumidosFinal.push({
+                        itemNome: item.nome,
+                        qtd: qtdConsumida,
+                        valorUnitario: valorUnit
+                    });
+                }
+            });
+
+            ficha.statusAtendimento = 'Atendimento Concluído';
+            ficha.itens = itensConsumidosFinal;
+
+            database.ref('fichas/' + ficha.id).set(ficha);
+            database.ref('estoque').set(estoque);
+
+            alert(`📥 Devoluções registradas e atendimento encerrado com sucesso!`);
+            limparFormularioConsumo();
         }
-
-        const loteChave = `${eventoKey}_LOTE_${loteNumero}`;
-
-        const novaFichaId = Date.now().toString();
-        const novaFicha = {
-            id: novaFichaId,
-            loteChave: loteChave,
-            evento: eventoKey,
-            dataConsumo: dataConsumoStr,
-            sala: sala,
-            itens: itensConsumidos
-        };
-
-        database.ref('fichas/' + novaFichaId).set(novaFicha);
-        database.ref('estoque').set(estoque);
-
-        alert(`Lançamento registrado com sucesso no evento ${eventoKey}!`);
-        document.getElementById('salaNome').value = '';
-        renderizarTabelaConsumo();
     }
 
     // CONSOLIDAÇÃO
@@ -615,15 +786,17 @@
             eventosMap[loteChave].totalLancamentos++;
             eventosMap[loteChave].fichas.push(f);
 
-            f.itens.forEach(i => {
-                const precoAjustado = precosAjustadosEventos[loteChave]?.[i.itemNome];
-                const vUnit = precoAjustado !== undefined ? precoAjustado : (i.valorUnitario || 0);
+            if (f.itens) {
+                f.itens.forEach(i => {
+                    const precoAjustado = precosAjustadosEventos[loteChave]?.[i.itemNome];
+                    const vUnit = precoAjustado !== undefined ? precoAjustado : (i.valorUnitario || 0);
 
-                if (!eventosMap[loteChave].itensTotais[i.itemNome]) {
-                    eventosMap[loteChave].itensTotais[i.itemNome] = { qtd: 0, valorUnitario: vUnit };
-                }
-                eventosMap[loteChave].itensTotais[i.itemNome].qtd += i.qtd;
-            });
+                    if (!eventosMap[loteChave].itensTotais[i.itemNome]) {
+                        eventosMap[loteChave].itensTotais[i.itemNome] = { qtd: 0, valorUnitario: vUnit };
+                    }
+                    eventosMap[loteChave].itensTotais[i.itemNome].qtd += i.qtd;
+                });
+            }
         });
 
         return eventosMap;
@@ -719,7 +892,10 @@
 
         fichasFiltradas.forEach(f => {
             const evKey = f.loteChave || f.evento.toUpperCase();
-            const chipsItens = f.itens.map(i => {
+            const listaExibir = f.itens && f.itens.length > 0 ? f.itens : (f.itensSaida || []);
+            const prefixoStatus = (f.statusAtendimento === 'Em Atendimento (Aguardando Devolução)' || f.statusTurno === 'Aguardando Retorno (Manhã)') ? '🟡 (Em Atendimento) ' : '';
+
+            const chipsItens = listaExibir.map(i => {
                 const precoAjustado = precosAjustadosEventos[evKey]?.[i.itemNome];
                 const vUnit = precoAjustado !== undefined ? precoAjustado : (i.valorUnitario !== undefined ? i.valorUnitario : 0);
                 const totalItem = i.qtd * vUnit;
@@ -730,7 +906,7 @@
                 <div class="historico-card">
                     <div class="historico-header">
                         <div class="historico-tags">
-                            <strong style="color:var(--primary); font-size:16px;">${f.evento}</strong>
+                            <strong style="color:var(--primary); font-size:16px;">${prefixoStatus}${f.evento}</strong>
                             <span class="badge" style="background:#e2e8f0; color:#2c3e50;">📅 ${f.dataConsumo}</span>
                             <span class="badge" style="background:#e8f0fe; color:var(--primary);">📍 ${f.sala}</span>
                         </div>
@@ -865,21 +1041,23 @@
 
         ev.fichas.forEach(f => {
             let totalDia = 0;
-            f.itens.forEach(i => {
-                const vUnit = mapaPrecosAtualizados[i.itemNome] !== undefined ? mapaPrecosAtualizados[i.itemNome] : (i.valorUnitario || 0);
-                const vTotal = i.qtd * vUnit;
-                totalDia += vTotal;
+            if(f.itens) {
+                f.itens.forEach(i => {
+                    const vUnit = mapaPrecosAtualizados[i.itemNome] !== undefined ? mapaPrecosAtualizados[i.itemNome] : (i.valorUnitario || 0);
+                    const vTotal = i.qtd * vUnit;
+                    totalDia += vTotal;
 
-                const celulaUnitDia = document.getElementById(`unit_${f.id}_${i.itemNome.replace(/\s+/g, '_')}`);
-                if (celulaUnitDia) {
-                    celulaUnitDia.innerText = `R$ ${vUnit.toFixed(2)}`;
-                }
+                    const celulaUnitDia = document.getElementById(`unit_${f.id}_${i.itemNome.replace(/\s+/g, '_')}`);
+                    if (celulaUnitDia) {
+                        celulaUnitDia.innerText = `R$ ${vUnit.toFixed(2)}`;
+                    }
 
-                const celulaTotalDia = document.getElementById(`tot_${f.id}_${i.itemNome.replace(/\s+/g, '_')}`);
-                if (celulaTotalDia) {
-                    celulaTotalDia.innerText = `R$ ${vTotal.toFixed(2)}`;
-                }
-            });
+                    const celulaTotalDia = document.getElementById(`tot_${f.id}_${i.itemNome.replace(/\s+/g, '_')}`);
+                    if (celulaTotalDia) {
+                        celulaTotalDia.innerText = `R$ ${vTotal.toFixed(2)}`;
+                    }
+                });
+            }
         });
 
         let totalGeralGeral = 0;
@@ -910,7 +1088,8 @@
         diasContainer.innerHTML = '';
 
         ev.fichas.forEach((f) => {
-            let linhasItens = f.itens.map(i => {
+            const listaItens = f.itens && f.itens.length > 0 ? f.itens : (f.itensSaida || []);
+            let linhasItens = listaItens.map(i => {
                 const precoAjustado = precosAjustadosEventos[evKey]?.[i.itemNome];
                 const vUnit = precoAjustado !== undefined ? precoAjustado : (i.valorUnitario !== undefined ? i.valorUnitario : 0);
                 const vTotal = i.qtd * vUnit;
@@ -1093,7 +1272,8 @@
 
         let htmlDias = '';
         ev.fichas.forEach(f => {
-            let linhasItens = f.itens.map(i => {
+            const listaItens = f.itens && f.itens.length > 0 ? f.itens : (f.itensSaida || []);
+            let linhasItens = listaItens.map(i => {
                 const precoAjustado = precosAjustadosEventos[loteChave]?.[i.itemNome];
                 const vUnit = precoAjustado !== undefined ? precoAjustado : (i.valorUnitario || 0);
                 return `
