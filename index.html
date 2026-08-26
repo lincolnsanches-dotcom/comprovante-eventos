@@ -400,7 +400,7 @@
     let fichas = [];
     let estoque = [];
     let assinaturasEventos = {};
-    let precosAjustadosEventos = {}; // Armazena ajustes de preço por evento { NOME_EVENTO: { itemNome: valor } }
+    let precosAjustadosEventos = {}; 
     let eventoAtualNome = null;
 
     const estoquePadrao = [
@@ -529,7 +529,7 @@
         }
 
         const eventoKey = eventoInput.toUpperCase();
-        const dataConsumo = formatarDataBR(dataConsumoRaw);
+        const dataConsumoStr = formatarDataBR(dataConsumoRaw);
         let itensConsumidos = [];
 
         estoque.forEach(item => {
@@ -543,19 +543,42 @@
 
         if (itensConsumidos.length === 0) return alert('Nenhum consumo foi digitado.');
 
-        // REGRA DE OURO: VERIFICA SE O LOTE ANTERIOR JÁ FOI ASSINADO
-        let lote = 1;
-        while (assinaturasEventos[`${eventoKey}_LOTE_${lote}`]) {
-            lote++;
+        // Busca todos os lotes que já existem para esse evento
+        const fichasDoEvento = fichas.filter(f => f.evento === eventoKey);
+        let loteNumero = 1;
+
+        if (fichasDoEvento.length > 0) {
+            let maiorLote = 1;
+            fichasDoEvento.forEach(f => {
+                if (f.loteChave) {
+                    const partes = f.loteChave.split('_LOTE_');
+                    if (partes.length > 1) {
+                        const num = parseInt(partes[1], 10);
+                        if (num > maiorLote) maiorLote = num;
+                    }
+                }
+            });
+
+            const loteMaisRecenteChave = `${eventoKey}_LOTE_${maiorLote}`;
+            const loteEstaAssinado = !!assinaturasEventos[loteMaisRecenteChave];
+
+            // SE O LOTE ANTERIOR JÁ FOI ASSINADO -> ABRE UM NOVO CICLO
+            // SE AINDA NÃO FOI ASSINADO -> CONTINUA JUNTANDO NO MESMO LOTE
+            if (loteEstaAssinado) {
+                loteNumero = maiorLote + 1;
+            } else {
+                loteNumero = maiorLote;
+            }
         }
-        const loteChave = `${eventoKey}_LOTE_${lote}`;
+
+        const loteChave = `${eventoKey}_LOTE_${loteNumero}`;
 
         const novaFichaId = Date.now().toString();
         const novaFicha = {
             id: novaFichaId,
             loteChave: loteChave,
             evento: eventoKey,
-            dataConsumo: dataConsumo,
+            dataConsumo: dataConsumoStr,
             sala: sala,
             itens: itensConsumidos
         };
@@ -563,7 +586,7 @@
         database.ref('fichas/' + novaFichaId).set(novaFicha);
         database.ref('estoque').set(estoque);
 
-        alert(`Lançamento registrado com sucesso! (Agrupado na Rodada ${lote})`);
+        alert(`Lançamento registrado com sucesso no evento ${eventoKey}!`);
         document.getElementById('salaNome').value = '';
         renderizarTabelaConsumo();
     }
@@ -577,13 +600,9 @@
             const loteChave = f.loteChave || `${nomeEvento}_LOTE_1`;
             
             if (!eventosMap[loteChave]) {
-                const partes = loteChave.split('_LOTE_');
-                const numLote = partes[partes.length - 1] || '1';
-
                 eventosMap[loteChave] = {
                     loteChave: loteChave,
                     nomeEvento: nomeEvento,
-                    numLote: numLote,
                     salasComDatas: new Set(),
                     totalLancamentos: 0,
                     itensTotais: {},
@@ -591,7 +610,6 @@
                 };
             }
 
-            // Exibe a Data + Sala utilizada
             const descSalaData = `${f.sala} (${f.dataConsumo})`;
             eventosMap[loteChave].salasComDatas.add(descSalaData);
             eventosMap[loteChave].totalLancamentos++;
@@ -631,7 +649,6 @@
             const ev = eventosMap[loteChave];
             const estaAssinado = !!assinaturasEventos[loteChave];
             
-            // Aplicação do Filtro de Status
             if (filtroStatus === 'pendente' && estaAssinado) return;
             if (filtroStatus === 'assinado' && !estaAssinado) return;
 
@@ -641,12 +658,15 @@
                 ? '<span class="badge badge-signed">✅ ASSINADO E CONCLUÍDO</span>' 
                 : '<span class="badge badge-pending">⏳ AGUARDANDO ASSINATURA</span>';
 
-            const tituloExibicao = ev.numLote === '1' ? ev.nomeEvento : `${ev.nomeEvento} (Rodada ${ev.numLote})`;
+            const datasArray = Array.from(ev.salasComDatas);
+            const primeiraData = datasArray.length > 0 ? datasArray[0].split('(')[1]?.replace(')', '') : '';
+
+            const tituloExibicao = estaAssinado && primeiraData ? `${ev.nomeEvento} (${primeiraData})` : ev.nomeEvento;
 
             tbody.innerHTML += `
                 <tr>
                     <td><strong>${tituloExibicao}</strong></td>
-                    <td>${Array.from(ev.salasComDatas).join('<br>')}</td>
+                    <td>${datasArray.join('<br>')}</td>
                     <td><span class="badge" style="background:#e2e8f0; color:#333;">${ev.totalLancamentos} lançamento(s)</span></td>
                     <td>${statusTag}</td>
                     <td>
@@ -698,7 +718,7 @@
         }
 
         fichasFiltradas.forEach(f => {
-            const evKey = f.evento.toUpperCase();
+            const evKey = f.loteChave || f.evento.toUpperCase();
             const chipsItens = f.itens.map(i => {
                 const precoAjustado = precosAjustadosEventos[evKey]?.[i.itemNome];
                 const vUnit = precoAjustado !== undefined ? precoAjustado : (i.valorUnitario !== undefined ? i.valorUnitario : 0);
@@ -1041,7 +1061,7 @@
             }
 
             fecharModal();
-            alert(`Assinatura do evento "${eventoAtualNome}" gravada com sucesso! O evento está travado para alterações.`);
+            alert(`Assinatura gravada com sucesso! O evento está travado para alterações.`);
         }
     }
 
@@ -1058,12 +1078,15 @@
         const ev = eventosMap[loteChave];
 
         if (!ev) {
-            return alert("Não foram encontrados dados para gerar o PDF deste lote.");
+            return alert("Não foram encontrados dados para gerar o PDF deste evento.");
         }
 
         const estaAssinado = !!assinaturasEventos[loteChave];
         const assinaturaDataUrl = assinaturasEventos[loteChave] || null;
-        const tituloExibicao = ev.numLote === '1' ? ev.nomeEvento : `${ev.nomeEvento} (Rodada ${ev.numLote})`;
+
+        const datasArray = Array.from(ev.salasComDatas);
+        const primeiraData = datasArray.length > 0 ? datasArray[0].split('(')[1]?.replace(')', '') : '';
+        const tituloExibicao = estaAssinado && primeiraData ? `${ev.nomeEvento} (${primeiraData})` : ev.nomeEvento;
 
         const win = window.open('', '_blank');
         if (!win) return alert("Por favor, permita pop-ups no seu navegador para gerar o PDF.");
@@ -1155,8 +1178,8 @@
                 </div>
 
                 <div class="info-box">
-                    <div><strong>Evento / Rodada:</strong> ${tituloExibicao}</div>
-                    <div><strong>Salas / Datas Atendidas:</strong> ${Array.from(ev.salasComDatas).join(', ')}</div>
+                    <div><strong>Evento:</strong> ${tituloExibicao}</div>
+                    <div><strong>Salas / Datas Atendidas:</strong> ${datasArray.join(', ')}</div>
                 </div>
 
                 <h4 style="color:#00463f; margin-bottom:8px;">Detalhamento por Data / Ambiente</h4>
