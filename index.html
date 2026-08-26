@@ -6,9 +6,9 @@
     <title>Controle de Consumo A&B - Bourbon Hotéis & Resorts</title>
     <style>
         :root {
-            --primary: #00463f;       /* Verde Bourbon */
-            --primary-dark: #00332e;  /* Verde Escuro */
-            --secondary: #2980b9;     /* Azul de Ação/Destaque */
+            --primary: #00463f;
+            --primary-dark: #00332e;
+            --secondary: #2980b9;
             --success: #27ae60;
             --warning: #e67e22;
             --danger: #c0392b;
@@ -19,25 +19,30 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background-color: #eef2f5; color: #333; padding: 15px; display: flex; flex-direction: column; min-height: 100vh; }
         
-        .container { max-width: 1200px; margin: 0 auto; background: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); flex: 1; }
+        #telaAuth { display: flex; justify-content: center; align-items: center; min-height: 85vh; }
+        .auth-card { background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); border-top: 5px solid var(--primary); width: 100%; max-width: 420px; text-align: center; }
+        .auth-tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #ddd; }
+        .auth-tab-btn { flex: 1; padding: 10px; border: none; background: #e9ecef; cursor: pointer; font-weight: bold; border-radius: 6px 6px 0 0; }
+        .auth-tab-btn.active { background: var(--primary); color: #fff; }
+
+        .container { max-width: 1200px; margin: 0 auto; background: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); flex: 1; display: none; }
         
-        /* Header com Logo */
         .app-header { display: flex; align-items: center; justify-content: space-between; border-bottom: 3px solid var(--primary); padding-bottom: 15px; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; }
         .app-header-left { display: flex; align-items: center; gap: 15px; }
         .app-logo { max-height: 55px; width: auto; object-fit: contain; }
         .app-title { color: var(--primary); font-size: 20px; font-weight: bold; }
+        .user-info { display: flex; align-items: center; gap: 10px; font-size: 13px; background: #f1f5f9; padding: 6px 12px; border-radius: 20px; border: 1px solid #cbd5e1; }
         
         .nav-tabs { display: flex; gap: 8px; border-bottom: 2px solid #ddd; margin-bottom: 20px; flex-wrap: wrap; }
         .tab-btn { padding: 10px 16px; border: none; background: #e9ecef; color: var(--dark); cursor: pointer; font-weight: bold; border-radius: 6px 6px 0 0; transition: all 0.2s; }
         .tab-btn.active { background: var(--primary); color: #fff; }
-        .tab-btn:hover:not(.active) { background: #dde2e5; }
-        
+
         .tab-content { display: none; }
         .tab-content.active { display: block; }
 
         .card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 15px; margin-bottom: 20px; }
         .grid-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
-        .form-group { display: flex; flex-direction: column; gap: 5px; }
+        .form-group { display: flex; flex-direction: column; gap: 5px; text-align: left; }
         .form-group label { font-size: 13px; font-weight: bold; color: var(--dark); }
         .form-group input, .form-group select { padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
         
@@ -50,187 +55,208 @@
         .btn-secondary { background: #6c757d; }
         .btn-warning { background: var(--warning); color: #fff; }
         .btn-danger { background: var(--danger); }
+        .btn-disabled { background: #94a3b8 !important; color: #f1f5f9 !important; cursor: not-allowed !important; opacity: 0.7; }
         .btn-sm { padding: 4px 8px; font-size: 12px; }
         .btn-block { width: 100%; justify-content: center; padding: 12px; font-size: 16px; margin-top: 10px; }
-        .btn:disabled { background: #ccc !important; cursor: not-allowed !important; opacity: 0.6; }
 
         .badge { padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
         .badge-pending { background: #ffeaa7; color: #d63031; }
         .badge-signed { background: #badc58; color: #075e54; }
 
-        /* Estilo da Lista Aberta de Atendimentos */
         .painel-abertos { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; margin-top: 10px; }
-        .card-aberto { background: #fff; border: 2px solid #e2e8f0; border-left: 5px solid var(--warning); border-radius: 6px; padding: 12px; display: flex; flex-direction: column; justify-content: space-between; transition: transform 0.1s, border-color 0.2s; }
-        .card-aberto:hover { border-color: var(--warning); transform: translateY(-2px); }
+        .card-aberto { background: #fff; border: 2px solid #e2e8f0; border-left: 5px solid var(--warning); border-radius: 6px; padding: 12px; display: flex; flex-direction: column; justify-content: space-between; }
         .card-aberto-header { font-weight: bold; font-size: 15px; color: var(--primary); margin-bottom: 4px; }
         .card-aberto-info { font-size: 13px; color: #555; margin-bottom: 10px; line-height: 1.4; }
 
-        /* Histórico Agrupado */
-        .historico-card { background: #fff; border: 1px solid #cbd5e1; border-left: 5px solid var(--primary); border-radius: 6px; padding: 12px 15px; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .historico-card { background: #fff; border: 1px solid #cbd5e1; border-left: 5px solid var(--primary); border-radius: 6px; padding: 12px 15px; margin-bottom: 12px; }
         .historico-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px; margin-bottom: 8px; flex-wrap: wrap; gap: 10px; }
-        .historico-tags { display: flex; gap: 12px; align-items: center; font-size: 14px; }
+        .historico-tags { display: flex; gap: 8px; align-items: center; font-size: 13px; flex-wrap: wrap; }
         .historico-itens { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 5px; }
         .item-chip { background: #f1f5f9; border: 1px solid #cbd5e1; padding: 4px 10px; border-radius: 15px; font-size: 13px; color: #334155; }
         .item-chip strong { color: var(--primary); }
 
-        /* Modais */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; justify-content: center; align-items: center; padding: 10px; }
-        .modal-content { position: relative; background: #fff; padding: 25px; border-radius: 8px; width: 100%; max-width: 850px; max-height: 92vh; overflow-y: auto; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        .modal-content { position: relative; background: #fff; padding: 25px; border-radius: 8px; width: 100%; max-width: 850px; max-height: 92vh; overflow-y: auto; }
         .modal-sm { max-width: 450px; }
 
-        .btn-close-modal { position: absolute; top: 15px; right: 15px; background: #e2e8f0; color: #333; border: none; width: 32px; height: 32px; border-radius: 50%; font-weight: bold; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
-        .btn-close-modal:hover { background: var(--danger); color: #fff; }
+        .btn-close-modal { position: absolute; top: 15px; right: 15px; background: #e2e8f0; color: #333; border: none; width: 32px; height: 32px; border-radius: 50%; font-weight: bold; font-size: 16px; cursor: pointer; }
 
         .resumo-header { background: #e8f0fe; padding: 12px; border-radius: 6px; font-size: 14px; margin-bottom: 15px; border-left: 5px solid var(--primary); }
-        
         .dia-bloco { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 12px; margin-bottom: 12px; }
-        .dia-titulo { font-size: 13px; font-weight: bold; color: var(--primary); margin-bottom: 8px; padding-bottom: 4px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; }
-        
+        .dia-titulo { font-size: 13px; font-weight: bold; color: var(--primary); margin-bottom: 8px; padding-bottom: 4px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 5px; }
         .resumo-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 5px; }
         .resumo-table th { background: var(--primary); padding: 6px; color: #fff; font-size: 12px; }
         .resumo-table td { padding: 6px; border-bottom: 1px solid #e2e8f0; }
-
         .total-geral-box { background: var(--primary-dark); color: #fff; padding: 12px; border-radius: 6px; margin: 15px 0 10px 0; font-size: 14px; font-weight: bold; text-align: center; }
 
         canvas { border: 2px dashed var(--primary); border-radius: 4px; background: #fff; cursor: crosshair; touch-action: none; width: 100%; height: 160px; margin-top: 5px; }
-
         footer { text-align: center; padding: 15px; font-size: 12px; color: #666; margin-top: 15px; }
-
-        @media print {
-            .nav-tabs, .btn, .no-print, header, footer { display: none !important; }
-            body { padding: 0; background: #fff; }
-            .container { box-shadow: none; padding: 0; }
-        }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <header class="app-header no-print">
+<!-- TELA DE AUTENTICAÇÃO -->
+<div id="telaAuth">
+    <div class="auth-card">
+        <h2 style="color: var(--primary); margin-bottom: 5px;">Bourbon Hotéis</h2>
+        <p style="font-size: 13px; color: #666; margin-bottom: 15px;">Controle de Consumo A&B</p>
+
+        <div class="auth-tabs">
+            <button id="tabBtnLogin" class="auth-tab-btn active" onclick="alternarFormAuth('login')">Entrar</button>
+            <button id="tabBtnCadastro" class="auth-tab-btn" onclick="alternarFormAuth('cadastro')">Criar Conta</button>
+        </div>
+        
+        <div id="formLogin">
+            <div class="form-group" style="margin-bottom: 12px;">
+                <label>E-mail:</label>
+                <input type="email" id="loginEmail" placeholder="seu.nome@bourbon.com.br">
+            </div>
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label>Senha:</label>
+                <input type="password" id="loginSenha" placeholder="Digite sua senha">
+            </div>
+            <button class="btn btn-success btn-block" onclick="efetuarLogin()">🔐 Acessar Sistema</button>
+        </div>
+
+        <div id="formCadastro" style="display: none;">
+            <div class="form-group" style="margin-bottom: 12px;">
+                <label>Nome Completo:</label>
+                <input type="text" id="cadNome" placeholder="Ex: Marcos Silva">
+            </div>
+            <div class="form-group" style="margin-bottom: 12px;">
+                <label>E-mail Corporativo:</label>
+                <input type="email" id="cadEmail" placeholder="seu.nome@bourbon.com.br">
+            </div>
+            <div class="form-group" style="margin-bottom: 12px;">
+                <label>Cargo / Função:</label>
+                <select id="cadCargo">
+                    <option value="Atendente A&B">Atendente A&B</option>
+                    <option value="Garçom Eventos">Garçom Eventos</option>
+                    <option value="Pessoal de Eventos">Pessoal de Eventos</option>
+                    <option value="Gerente / Supervisor">Gerente / Supervisor</option>
+                </select>
+            </div>
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label>Crie uma Senha:</label>
+                <input type="password" id="cadSenha" placeholder="Mínimo 6 caracteres">
+            </div>
+            <button class="btn btn-warning btn-block" onclick="efetuarCadastro()">👤 Cadastrar Usuário</button>
+        </div>
+    </div>
+</div>
+
+<!-- CONTAINER PRINCIPAL DO SISTEMA -->
+<div id="appContainer" class="container">
+    <header class="app-header">
         <div class="app-header-left">
             <img src="logo.png" alt="Bourbon Logo" class="app-logo" onerror="this.style.display='none'">
             <div class="app-title">Sistema A&B - Controle de Consumo por Sala / Evento</div>
         </div>
+        <div class="user-info">
+            <span>👤 <strong id="lblUsuarioLogado">Usuário</strong> (<span id="lblCargoLogado">Operacional</span>)</span>
+            <button class="btn btn-danger btn-sm" onclick="efetuarLogout()">Sair 🚪</button>
+        </div>
     </header>
 
-    <div class="nav-tabs no-print">
-        <button class="tab-btn active" onclick="mudarAba('abaConsumo', event)">☕ Consumo por Sala</button>
-        <button class="tab-btn" onclick="mudarAba('abaPendentes', event)">📝 Fichas / Assinaturas por Evento</button>
-        <button class="tab-btn" onclick="mudarAba('abaEstoque', event)">📦 Cadastro de Estoque</button>
-        <button class="tab-btn" onclick="mudarAba('abaRelatorio', event)">📊 Histórico Geral</button>
+    <div class="nav-tabs">
+        <button id="tabBtnConsumo" class="tab-btn active" onclick="mudarAba('abaConsumo', event)">☕ Consumo por Sala</button>
+        <button id="tabBtnPendentes" class="tab-btn" onclick="mudarAba('abaPendentes', event)">📝 Fichas / Assinaturas por Evento</button>
+        <button id="tabBtnEstoque" class="tab-btn" onclick="mudarAba('abaEstoque', event)">📦 Cadastro de Estoque</button>
+        <button id="tabBtnRelatorio" class="tab-btn" onclick="mudarAba('abaRelatorio', event)">📊 Histórico Geral</button>
+        <button id="tabBtnAuditoria" class="tab-btn" onclick="mudarAba('abaAuditoria', event)">📋 Registro de Auditoria (Logs)</button>
     </div>
 
-    <!-- ABA 1: CONSUMO -->
+    <!-- ABA 1: CONSUMO POR SALA -->
     <div id="abaConsumo" class="tab-content active">
-        <!-- SELEÇÃO DE ETAPA DE PROCESSO -->
-        <div class="card no-print" style="background: #e8f0fe; border-left: 5px solid var(--secondary);">
-            <div class="form-group">
-                <label style="color: var(--secondary); font-size: 15px;">📋 Selecione a Etapa do Atendimento:</label>
-                <select id="etapaSelect" onchange="alternarEtapaProcesso()" style="font-weight: bold; font-size: 15px; padding: 10px; max-width: 500px;">
-                    <option value="SAIDA">📤 1. Novo Abastecimento / Saída de Materiais</option>
-                    <option value="RETORNO">📥 2. Registrar Devolução de Sobras (Atendimentos em Aberto)</option>
-                </select>
-            </div>
+        <div id="msgAvisoVisualizacaoConsumo" class="card" style="display: none; background: #fff9e6; border: 1px solid #ffeaa7; color: #d63031;">
+            🔒 <strong>Modo de Visualização:</strong> Seu perfil (Pessoal de Eventos) tem permissão apenas para acompanhar os lançamentos das salas.
         </div>
 
-        <!-- PAINEL VISUAL DE ATENDIMENTOS EM ABERTO -->
-        <div id="containerFichasAbertas" class="card no-print" style="display: none; background: #fff9e6; border: 1px solid #ffeaa7;">
-            <h3 style="color: var(--warning); margin-bottom: 5px;">📂 Atendimentos Aguardando Devolução / Fechamento</h3>
-            <p style="font-size: 13px; color: #666; margin-bottom: 10px;">Clique na ficha correspondente para registrar o retorno e calcular o consumo final.</p>
-            <div id="painelCardsAbertos" class="painel-abertos">
-                <!-- Os cards de atendimento em aberto aparecem aqui dinamicamente -->
-            </div>
-        </div>
-
-        <div class="card no-print">
-            <h3 id="tituloIdentificacao">1. Identificação do Evento</h3>
-            <div class="grid-form" style="margin-top: 10px;">
+        <div id="cardControleConsumo">
+            <div class="card" style="background: #e8f0fe; border-left: 5px solid var(--secondary);">
                 <div class="form-group">
-                    <label>Data do Consumo:</label>
-                    <input type="date" id="dataConsumo">
-                </div>
-                <div class="form-group">
-                    <label>Nome do Evento:</label>
-                    <input type="text" id="eventoNome" placeholder="Ex: GREMIO, BRF, Convenção 2026">
-                </div>
-                <div class="form-group">
-                    <label>Sala / Ambiente:</label>
-                    <select id="salaNome">
-                        <option value="">Selecione a Sala...</option>
-                        <option value="Ambulatório">Ambulatório</option>
-                        <option value="Arujá">Arujá</option>
-                        <option value="Ballroom A">Ballroom A</option>
-                        <option value="Ballroom B">Ballroom B</option>
-                        <option value="Ballroom C">Ballroom C</option>
-                        <option value="Board Room">Board Room</option>
-                        <option value="Bourbon Club">Bourbon Club</option>
-                        <option value="Bragança">Bragança</option>
-                        <option value="Camarim Ball C">Camarim Ball C</option>
-                        <option value="Camarim Ballroom">Camarim Ballroom</option>
-                        <option value="Camarim Theatro">Camarim Theatro</option>
-                        <option value="Campinas">Campinas</option>
-                        <option value="Carteado">Carteado</option>
-                        <option value="Embu">Embu</option>
-                        <option value="Foyer Piso C">Foyer Piso C</option>
-                        <option value="Foyer Piso E">Foyer Piso E</option>
-                        <option value="Foyer Piso M">Foyer Piso M</option>
-                        <option value="Garden 1">Garden 1</option>
-                        <option value="Garden 2">Garden 2</option>
-                        <option value="Grand Ballroom Garden">Grand Ballroom Garden</option>
-                        <option value="House Mix Ball">House Mix Ball</option>
-                        <option value="House Mix Garden">House Mix Garden</option>
-                        <option value="Itatiba">Itatiba</option>
-                        <option value="Itu">Itu</option>
-                        <option value="Itupeva">Itupeva</option>
-                        <option value="Jundiaí">Jundiaí</option>
-                        <option value="Lobby">Lobby</option>
-                        <option value="Londrina">Londrina</option>
-                        <option value="Mairiporã">Mairiporã</option>
-                        <option value="Mauá">Mauá</option>
-                        <option value="Office 1">Office 1</option>
-                        <option value="Office 2">Office 2</option>
-                        <option value="Office 3">Office 3</option>
-                        <option value="Office 4">Office 4</option>
-                        <option value="Office 5">Office 5</option>
-                        <option value="Office 6">Office 6</option>
-                        <option value="Office 7">Office 7</option>
-                        <option value="Office 8">Office 8</option>
-                        <option value="Orquídea">Orquídea</option>
-                        <option value="Palco Recuo">Palco Recuo</option>
-                        <option value="Piracicaba">Piracicaba</option>
-                        <option value="Poá">Poá</option>
-                        <option value="Praça Palmeiras">Praça Palmeiras</option>
-                        <option value="Sala de Aprendizagem">Sala de Aprendizagem</option>
-                        <option value="São Paulo">São Paulo</option>
-                        <option value="Sítio do Chico Bento">Sítio do Chico Bento</option>
-                        <option value="Skyline">Skyline</option>
-                        <option value="Sorocaba">Sorocaba</option>
-                        <option value="SPA">SPA</option>
-                        <option value="Sportpark">Sportpark</option>
-                        <option value="Theatro Bourbon">Theatro Bourbon</option>
-                        <option value="Tuiuti">Tuiuti</option>
+                    <label style="color: var(--secondary); font-size: 15px;">📋 Selecione a Etapa do Atendimento:</label>
+                    <select id="etapaSelect" onchange="alternarEtapaProcesso()" style="font-weight: bold; font-size: 15px; padding: 10px; max-width: 500px;">
+                        <option value="SAIDA">📤 1. Novo Abastecimento / Saída de Materiais</option>
+                        <option value="RETORNO">📥 2. Registrar Devolução de Sobras (Atendimentos em Aberto)</option>
                     </select>
                 </div>
             </div>
-        </div>
 
-        <div class="card">
-            <h3>2. Lançamento de Saída e Retorno</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Item / Bebida</th>
-                        <th style="width: 100px;">Valor Unit.</th>
-                        <th style="width: 90px;">Saída</th>
-                        <th style="width: 90px;">Retorno</th>
-                        <th style="width: 100px;">Consumo</th>
-                        <th style="width: 110px;">Valor Total</th>
-                    </tr>
-                </thead>
-                <tbody id="tabelaConsumoBody"></tbody>
-            </table>
+            <div id="containerFichasAbertas" class="card" style="display: none; background: #fff9e6; border: 1px solid #ffeaa7;">
+                <h3 style="color: var(--warning); margin-bottom: 5px;">📂 Atendimentos Aguardando Devolução / Fechamento</h3>
+                <p style="font-size: 13px; color: #666; margin-bottom: 10px;">Clique na ficha correspondente para registrar o retorno e calcular o consumo final.</p>
+                <div id="painelCardsAbertos" class="painel-abertos"></div>
+            </div>
 
-            <button id="btnSalvarConsumo" class="btn btn-success btn-block" onclick="finalizarELancarConsumo()">📤 Confirmar Abastecimento Inicial</button>
+            <div class="card">
+                <h3>1. Identificação do Evento</h3>
+                <div class="grid-form" style="margin-top: 10px;">
+                    <div class="form-group">
+                        <label>Data do Consumo:</label>
+                        <input type="date" id="dataConsumo">
+                    </div>
+                    <div class="form-group">
+                        <label>Nome do Evento:</label>
+                        <input type="text" id="eventoNome" placeholder="Ex: GREMIO, BRF, Convenção 2026">
+                    </div>
+                    <div class="form-group">
+                        <label>Sala / Ambiente:</label>
+                        <select id="salaNome">
+                            <option value="">Selecione a Sala...</option>
+                            <option value="Ambulatório">Ambulatório</option>
+                            <option value="Arujá">Arujá</option>
+                            <option value="Ballroom A">Ballroom A</option>
+                            <option value="Ballroom B">Ballroom B</option>
+                            <option value="Ballroom C">Ballroom C</option>
+                            <option value="Board Room">Board Room</option>
+                            <option value="Bourbon Club">Bourbon Club</option>
+                            <option value="Bragança">Bragança</option>
+                            <option value="Campinas">Campinas</option>
+                            <option value="Carteado">Carteado</option>
+                            <option value="Embu">Embu</option>
+                            <option value="Foyer Piso C">Foyer Piso C</option>
+                            <option value="Foyer Piso E">Foyer Piso E</option>
+                            <option value="Foyer Piso M">Foyer Piso M</option>
+                            <option value="Grand Ballroom Garden">Grand Ballroom Garden</option>
+                            <option value="Itatiba">Itatiba</option>
+                            <option value="Itu">Itu</option>
+                            <option value="Itupeva">Itupeva</option>
+                            <option value="Jundiaí">Jundiaí</option>
+                            <option value="Lobby">Lobby</option>
+                            <option value="Londrina">Londrina</option>
+                            <option value="Mairiporã">Mairiporã</option>
+                            <option value="Mauá">Mauá</option>
+                            <option value="Piracicaba">Piracicaba</option>
+                            <option value="Poá">Poá</option>
+                            <option value="Praça Palmeiras">Praça Palmeiras</option>
+                            <option value="São Paulo">São Paulo</option>
+                            <option value="Skyline">Skyline</option>
+                            <option value="Sorocaba">Sorocaba</option>
+                            <option value="Theatro Bourbon">Theatro Bourbon</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>2. Lançamento de Saída e Retorno</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Item / Bebida</th>
+                            <th style="width: 100px;">Valor Unit.</th>
+                            <th style="width: 90px;">Saída</th>
+                            <th style="width: 90px;">Retorno</th>
+                            <th style="width: 100px;">Consumo</th>
+                            <th style="width: 110px;">Valor Total</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabelaConsumoBody"></tbody>
+                </table>
+
+                <button id="btnSalvarConsumo" class="btn btn-success btn-block" onclick="finalizarELancarConsumo()">📤 Confirmar Abastecimento Inicial</button>
+            </div>
         </div>
     </div>
 
@@ -238,10 +264,10 @@
     <div id="abaPendentes" class="tab-content">
         <h3>📝 Resumo Consolidado de Fichas por Evento</h3>
         <p style="font-size: 13px; color: #666; margin-bottom: 10px;">
-            Todos os lançamentos do mesmo evento são agrupados aqui para uma **única assinatura final do cliente**.
+            Todos os lançamentos do mesmo evento são agrupados aqui para acompanhamento e **assinatura final do cliente**.
         </p>
         
-        <div class="card no-print" style="margin-bottom: 15px; padding: 10px 15px;">
+        <div class="card" style="margin-bottom: 15px; padding: 10px 15px;">
             <div class="form-group" style="max-width: 300px;">
                 <label for="filtroStatus">🔍 Filtrar por Status:</label>
                 <select id="filtroStatus" onchange="renderizarFichasPendentes()">
@@ -266,9 +292,9 @@
         </table>
     </div>
 
-    <!-- ABA 3: ESTOQUE COM EDICAO -->
+    <!-- ABA 3: ESTOQUE -->
     <div id="abaEstoque" class="tab-content">
-        <div class="card">
+        <div id="cardCadastroEstoque" class="card">
             <h3>Cadastrar Novo Item</h3>
             <div class="grid-form" style="margin-top: 10px;">
                 <div class="form-group">
@@ -296,16 +322,16 @@
                     <th>Descrição</th>
                     <th>Saldo</th>
                     <th>Valor Unit. (R$)</th>
-                    <th style="width: 180px; text-align: center;">Ações</th>
+                    <th id="thAcoesEstoque" style="width: 180px; text-align: center;">Ações</th>
                 </tr>
             </thead>
             <tbody id="tabelaEstoqueBody"></tbody>
         </table>
     </div>
 
-    <!-- ABA 4: HISTÓRICO COM FILTRO DE PERÍODO -->
+    <!-- ABA 4: HISTÓRICO GERAL -->
     <div id="abaRelatorio" class="tab-content">
-        <div class="card no-print" style="margin-bottom: 15px;">
+        <div class="card" style="margin-bottom: 15px;">
             <h3 style="margin-bottom: 10px;">🔍 Filtros do Histórico</h3>
             <div class="grid-form">
                 <div class="form-group">
@@ -318,7 +344,7 @@
                 </div>
                 <div class="form-group">
                     <label>Buscar Texto:</label>
-                    <input type="text" id="buscaHistorico" placeholder="Evento, Sala ou Data..." oninput="renderizarHistorico()">
+                    <input type="text" id="buscaHistorico" placeholder="Evento, Sala, Data ou Operador..." oninput="renderizarHistorico()">
                 </div>
                 <div class="form-group" style="justify-content: flex-end;">
                     <button class="btn btn-secondary" onclick="limparFiltrosHistorico()">🔄 Limpar Filtros</button>
@@ -329,7 +355,25 @@
         <div id="containerHistoricoCards"></div>
 
         <br>
-        <button class="btn btn-danger" onclick="limparHistorico()">🗑️ Limpar Todo o Histórico</button>
+        <button id="btnLimparTodoHistorico" class="btn btn-danger" onclick="limparHistorico()">🗑️ Limpar Todo o Histórico</button>
+    </div>
+
+    <!-- ABA 5: AUDITORIA / LOGS -->
+    <div id="abaAuditoria" class="tab-content">
+        <h3>📋 Registros de Auditoria (Quem Fez O Quê)</h3>
+        <p style="font-size: 13px; color: #666; margin-bottom: 10px;">Histórico das operações realizadas por e-mail e nome de usuário.</p>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 160px;">Data / Hora</th>
+                    <th style="width: 220px;">Usuário Logado</th>
+                    <th style="width: 160px;">Ação</th>
+                    <th>Detalhes da Operação</th>
+                </tr>
+            </thead>
+            <tbody id="tabelaAuditoriaBody"></tbody>
+        </table>
     </div>
 </div>
 
@@ -371,6 +415,7 @@
         <div class="resumo-header">
             <div><strong>Evento:</strong> <span id="resumoEvento" style="font-size:16px; color:var(--primary); font-weight:bold;"></span></div>
             <div><strong>Salas / Datas Atendidas:</strong> <span id="resumoSalas"></span></div>
+            <div id="resumoAssinador" style="margin-top: 5px; color: #075e54; font-weight: bold; display: none;"></div>
         </div>
 
         <div id="detalhamentoDiasContainer"></div>
@@ -390,6 +435,10 @@
             <tbody id="resumoTotalGeralBody"></tbody>
         </table>
 
+        <div id="avisoBloqueioAssinatura" style="display: none; background: #e2e8f0; border: 1px solid #cbd5e1; color: #475569; padding: 10px; border-radius: 4px; font-size: 13px; font-weight: bold; margin-top: 15px; text-align: center;">
+            🔒 Modo de Consulta (Apenas Leitura): Seu perfil não possui permissão para colher a assinatura do cliente ou alterar valores.
+        </div>
+
         <p id="tituloAssinatura" style="font-size: 13px; font-weight: bold; color: var(--primary); margin-top: 15px; text-align: left;">
             ✍️ Assinatura de Aceite e Fechamento Final do Evento:
         </p>
@@ -404,12 +453,11 @@
     </div>
 </div>
 
-<!-- SCRIPTS DO FIREBASE SDK -->
+<!-- SDK FIREBASE -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
 <script>
-    // CONFIGURAÇÃO DO FIREBASE
     const firebaseConfig = {
         apiKey: "AIzaSyAqGytGqn42kf-SK1Y5K7BOIYMkKXXb9O0",
         authDomain: "controle-bebidas-salas-eventos.firebaseapp.com",
@@ -423,11 +471,12 @@
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
 
-    // VARIÁVEIS GLOBAIS DE ESTADO
+    let usuarioLogado = null; 
     let fichas = [];
     let estoque = [];
     let assinaturasEventos = {};
     let precosAjustadosEventos = {}; 
+    let logsAuditoria = [];
     let eventoAtualNome = null;
     let fichaEmEdicaoId = null;
 
@@ -443,41 +492,199 @@
 
     document.getElementById('dataConsumo').valueAsDate = new Date();
 
-    // SINCRONIZAÇÃO EM TEMPO REAL
-    database.ref('estoque').on('value', (snapshot) => {
-        const data = snapshot.val();
-        if (data) {
-            estoque = Array.isArray(data) ? data : Object.values(data);
-            estoque.forEach(item => {
-                if (item.valorUnitario === undefined) item.valorUnitario = 0;
-            });
+    function alternarFormAuth(modo) {
+        if (modo === 'login') {
+            document.getElementById('formLogin').style.display = 'block';
+            document.getElementById('formCadastro').style.display = 'none';
+            document.getElementById('tabBtnLogin').classList.add('active');
+            document.getElementById('tabBtnCadastro').classList.remove('active');
         } else {
-            estoque = estoquePadrao;
-            database.ref('estoque').set(estoquePadrao);
+            document.getElementById('formLogin').style.display = 'none';
+            document.getElementById('formCadastro').style.display = 'block';
+            document.getElementById('tabBtnLogin').classList.remove('active');
+            document.getElementById('tabBtnCadastro').classList.add('active');
         }
-        renderizarTabelaConsumo();
-        renderizarEstoque();
-    });
+    }
 
-    database.ref('fichas').on('value', (snapshot) => {
-        const data = snapshot.val();
-        fichas = data ? Object.values(data) : [];
-        fichas.sort((a, b) => b.id - a.id);
-        renderizarHistorico();
-        renderizarFichasPendentes();
-        renderizarCardsAbertos();
-    });
+    function sanitizeKey(email) {
+        return email.toLowerCase().replace(/[.#$\[\]]/g, "_");
+    }
 
-    database.ref('assinaturas').on('value', (snapshot) => {
-        assinaturasEventos = snapshot.val() || {};
-        renderizarFichasPendentes();
-    });
+    function efetuarCadastro() {
+        const nome = document.getElementById('cadNome').value.trim();
+        const email = document.getElementById('cadEmail').value.trim().toLowerCase();
+        const cargo = document.getElementById('cadCargo').value;
+        const senha = document.getElementById('cadSenha').value;
 
-    database.ref('precosAjustados').on('value', (snapshot) => {
-        precosAjustadosEventos = snapshot.val() || {};
-    });
+        if (!nome || !email || !senha) return alert('Por favor, preencha todos os campos!');
+        if (senha.length < 6) return alert('A senha deve ter pelo menos 6 caracteres.');
 
-    // LÓGICA DE ETAPAS DO PROCESSO
+        const keyEmail = sanitizeKey(email);
+
+        database.ref('usuarios/' + keyEmail).once('value', snapshot => {
+            if (snapshot.exists()) {
+                alert('Este e-mail já está cadastrado no sistema!');
+            } else {
+                const novoUsuario = { nome, email, cargo, senha };
+                database.ref('usuarios/' + keyEmail).set(novoUsuario);
+
+                usuarioLogado = novoUsuario;
+                iniciarSessao();
+                registrarLog('CADASTRO', `Criou conta (${cargo}).`);
+                alert(`Conta criada com sucesso! Bem-vindo(a), ${nome}.`);
+            }
+        });
+    }
+
+    function efetuarLogin() {
+        const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+        const senha = document.getElementById('loginSenha').value;
+
+        if (!email || !senha) return alert('Informe e-mail e senha para entrar.');
+
+        const keyEmail = sanitizeKey(email);
+
+        database.ref('usuarios/' + keyEmail).once('value', snapshot => {
+            const user = snapshot.val();
+            if (user && user.senha === senha) {
+                usuarioLogado = user;
+                iniciarSessao();
+                registrarLog('LOGIN', `Efetuou login no sistema.`);
+            } else {
+                alert('E-mail ou senha inválidos!');
+            }
+        });
+    }
+
+    function aplicarPermissoesPorPerfil() {
+        if (!usuarioLogado) return;
+
+        const cargo = usuarioLogado.cargo;
+        const isGerente = (cargo === 'Gerente / Supervisor');
+        const isEventos = (cargo === 'Pessoal de Eventos');
+
+        if (isEventos) {
+            document.getElementById('cardControleConsumo').style.display = 'none';
+            document.getElementById('msgAvisoVisualizacaoConsumo').style.display = 'block';
+        } else {
+            document.getElementById('cardControleConsumo').style.display = 'block';
+            document.getElementById('msgAvisoVisualizacaoConsumo').style.display = 'none';
+        }
+
+        document.getElementById('tabBtnPendentes').style.display = 'inline-block';
+        document.getElementById('tabBtnAuditoria').style.display = isGerente ? 'inline-block' : 'none';
+        document.getElementById('btnLimparTodoHistorico').style.display = isGerente ? 'inline-flex' : 'none';
+        document.getElementById('cardCadastroEstoque').style.display = isGerente ? 'block' : 'none';
+        document.getElementById('thAcoesEstoque').style.display = isGerente ? 'table-cell' : 'none';
+
+        if (isEventos) {
+            mudarAba('abaPendentes');
+        } else {
+            mudarAba('abaConsumo');
+        }
+    }
+
+    function iniciarSessao() {
+        document.getElementById('lblUsuarioLogado').innerText = usuarioLogado.nome;
+        document.getElementById('lblCargoLogado').innerText = usuarioLogado.cargo;
+        document.getElementById('telaAuth').style.display = 'none';
+        document.getElementById('appContainer').style.display = 'block';
+        
+        aplicarPermissoesPorPerfil();
+        carregarDadosFirebase();
+    }
+
+    function efetuarLogout() {
+        if (usuarioLogado) {
+            registrarLog('LOGOUT', `Efetuou saída do sistema.`);
+        }
+        usuarioLogado = null;
+        document.getElementById('loginSenha').value = '';
+        document.getElementById('appContainer').style.display = 'none';
+        document.getElementById('telaAuth').style.display = 'flex';
+        alternarFormAuth('login');
+    }
+
+    function registrarLog(acao, detalhes) {
+        if (!usuarioLogado) return;
+        const agora = new Date();
+        const dataHoraStr = agora.toLocaleDateString('pt-BR') + ' ' + agora.toLocaleTimeString('pt-BR');
+        
+        const logId = Date.now().toString();
+        const logData = {
+            id: logId,
+            dataHora: dataHoraStr,
+            usuario: `${usuarioLogado.nome} (${usuarioLogado.email})`,
+            acao: acao,
+            detalhes: detalhes
+        };
+
+        database.ref('auditoria/' + logId).set(logData);
+    }
+
+    function carregarDadosFirebase() {
+        database.ref('estoque').on('value', (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                estoque = Array.isArray(data) ? data : Object.values(data);
+                estoque.forEach(item => { if (item.valorUnitario === undefined) item.valorUnitario = 0; });
+            } else {
+                estoque = estoquePadrao;
+                database.ref('estoque').set(estoquePadrao);
+            }
+            renderizarTabelaConsumo();
+            renderizarEstoque();
+        });
+
+        database.ref('fichas').on('value', (snapshot) => {
+            const data = snapshot.val();
+            fichas = data ? Object.values(data) : [];
+            fichas.sort((a, b) => b.id - a.id);
+            renderizarHistorico();
+            renderizarFichasPendentes();
+            renderizarCardsAbertos();
+        });
+
+        database.ref('assinaturas').on('value', (snapshot) => {
+            assinaturasEventos = snapshot.val() || {};
+            renderizarFichasPendentes();
+            renderizarHistorico();
+        });
+
+        database.ref('precosAjustados').on('value', (snapshot) => {
+            precosAjustadosEventos = snapshot.val() || {};
+        });
+
+        database.ref('auditoria').on('value', (snapshot) => {
+            const data = snapshot.val();
+            logsAuditoria = data ? Object.values(data) : [];
+            logsAuditoria.sort((a, b) => b.id - a.id);
+            renderizarAuditoria();
+        });
+    }
+
+    function renderizarAuditoria() {
+        const tbody = document.getElementById('tabelaAuditoriaBody');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+
+        if (logsAuditoria.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Nenhum registro de log encontrado.</td></tr>';
+            return;
+        }
+
+        logsAuditoria.forEach(log => {
+            tbody.innerHTML += `
+                <tr>
+                    <td><small style="color:#666;">${log.dataHora}</small></td>
+                    <td><strong>${log.usuario}</strong></td>
+                    <td><span class="badge" style="background:#e2e8f0; color:#00463f;">${log.acao}</span></td>
+                    <td>${log.detalhes}</td>
+                </tr>
+            `;
+        });
+    }
+
     function alternarEtapaProcesso() {
         const modo = document.getElementById('etapaSelect').value;
         const containerFichas = document.getElementById('containerFichasAbertas');
@@ -504,13 +711,12 @@
         document.getElementById('salaNome').disabled = !habilitar;
     }
 
-    // RENDERIZA A LISTA EM ABERTO DE FORMA VISUAL (CARDS)
     function renderizarCardsAbertos() {
         const painel = document.getElementById('painelCardsAbertos');
         if (!painel) return;
         painel.innerHTML = '';
 
-        const fichasAbertas = fichas.filter(f => f.statusAtendimento === 'Em Atendimento (Aguardando Devolução)' || f.statusTurno === 'Aguardando Retorno (Manhã)');
+        const fichasAbertas = fichas.filter(f => f.statusAtendimento === 'Em Atendimento (Aguardando Devolução)');
 
         if (fichasAbertas.length === 0) {
             painel.innerHTML = '<div style="grid-column: 1/-1; color: #888; font-style: italic; padding: 10px;">Não há atendimentos em aberto no momento.</div>';
@@ -520,14 +726,16 @@
         fichasAbertas.forEach(f => {
             const isSelecionado = (fichaEmEdicaoId === f.id);
             const borderStyle = isSelecionado ? 'border-color: var(--secondary); background: #e8f0fe;' : '';
-            
+            const criador = f.usuarioLancamento ? f.usuarioLancamento.nome : 'N/I';
+
             painel.innerHTML += `
                 <div class="card-aberto" style="${borderStyle}">
                     <div>
                         <div class="card-aberto-header">${f.evento}</div>
                         <div class="card-aberto-info">
                             📍 <strong>Sala:</strong> ${f.sala}<br>
-                            📅 <strong>Data:</strong> ${f.dataConsumo}
+                            📅 <strong>Data:</strong> ${f.dataConsumo}<br>
+                            👤 <strong>Aberto por:</strong> ${criador}
                         </div>
                     </div>
                     <button class="btn ${isSelecionado ? 'btn-secondary' : 'btn-warning'} btn-sm" onclick="selecionarFichaDevolucao('${f.id}')">
@@ -547,7 +755,6 @@
         document.getElementById('salaNome').value = ficha.sala;
         document.getElementById('dataConsumo').value = converterDataBRparaISO(ficha.dataConsumo);
 
-        // Preenche as saídas e bloqueia
         estoque.forEach(item => {
             const inputSaida = document.getElementById(`saida_${item.id}`);
             const inputRetorno = document.getElementById(`retorno_${item.id}`);
@@ -579,21 +786,24 @@
         renderizarCardsAbertos();
     }
 
-    // NAVEGAÇÃO DE ABAS
     function mudarAba(abaId, evt) {
         document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
         
         document.getElementById(abaId).classList.add('active');
         if (evt) evt.currentTarget.classList.add('active');
+        else {
+            const btnTarget = document.getElementById('tabBtn' + abaId.replace('aba', ''));
+            if(btnTarget) btnTarget.classList.add('active');
+        }
 
         if(abaId === 'abaEstoque') renderizarEstoque();
         if(abaId === 'abaRelatorio') renderizarHistorico();
         if(abaId === 'abaConsumo') renderizarTabelaConsumo();
         if(abaId === 'abaPendentes') renderizarFichasPendentes();
+        if(abaId === 'abaAuditoria') renderizarAuditoria();
     }
 
-    // CONSUMO POR SALA
     function renderizarTabelaConsumo() {
         const tbody = document.getElementById('tabelaConsumoBody');
         tbody.innerHTML = '';
@@ -651,6 +861,10 @@
     }
 
     function finalizarELancarConsumo() {
+        if (usuarioLogado.cargo === 'Pessoal de Eventos') {
+            return alert('O perfil "Pessoal de Eventos" não possui permissão para criar lançamentos.');
+        }
+
         const modoProcesso = document.getElementById('etapaSelect').value;
         const eventoInput = document.getElementById('eventoNome').value.trim();
         const sala = document.getElementById('salaNome').value;
@@ -663,7 +877,6 @@
         const eventoKey = eventoInput.toUpperCase();
         const dataConsumoStr = formatarDataBR(dataConsumoRaw);
 
-        // ETAPA 1: ABASTECIMENTO / SAÍDA
         if (modoProcesso === 'SAIDA') {
             let itensSaida = [];
             estoque.forEach(item => {
@@ -711,17 +924,20 @@
                 sala: sala,
                 statusAtendimento: 'Em Atendimento (Aguardando Devolução)',
                 itensSaida: itensSaida,
-                itens: []
+                itens: [],
+                usuarioLancamento: {
+                    nome: usuarioLogado.nome,
+                    email: usuarioLogado.email
+                }
             };
 
             database.ref('fichas/' + novaFichaId).set(novaFicha);
             database.ref('estoque').set(estoque);
 
-            alert(`📤 Abastecimento gravado com sucesso! Ficha aberta no painel para devolução.`);
+            registrarLog('ABASTECIMENTO', `Lançou saída para evento ${eventoKey} na sala ${sala}.`);
+            alert(`📤 Abastecimento gravado por ${usuarioLogado.nome}! Ficha aberta no painel para devolução.`);
             limparFormularioConsumo();
         } 
-        
-        // ETAPA 2: DEVOLUÇÃO / RETORNO
         else {
             if (!fichaEmEdicaoId) return alert('Clique em uma ficha do painel acima para registrar a devolução.');
 
@@ -738,9 +954,7 @@
 
                 const qtdConsumida = Math.max(0, qtdSaida - qtdRetorno);
 
-                if (qtdRetorno > 0) {
-                    item.qtd += qtdRetorno;
-                }
+                if (qtdRetorno > 0) item.qtd += qtdRetorno;
 
                 if (qtdConsumida > 0) {
                     itensConsumidosFinal.push({
@@ -753,16 +967,20 @@
 
             ficha.statusAtendimento = 'Atendimento Concluído';
             ficha.itens = itensConsumidosFinal;
+            ficha.usuarioDevolucao = {
+                nome: usuarioLogado.nome,
+                email: usuarioLogado.email
+            };
 
             database.ref('fichas/' + ficha.id).set(ficha);
             database.ref('estoque').set(estoque);
 
-            alert(`📥 Devoluções registradas e atendimento encerrado com sucesso!`);
+            registrarLog('DEVOLUÇÃO', `Registrou devolução por ${usuarioLogado.nome} para o evento ${ficha.evento} na sala ${ficha.sala}.`);
+            alert(`📥 Devoluções registradas por ${usuarioLogado.nome} e atendimento encerrado!`);
             limparFormularioConsumo();
         }
     }
 
-    // CONSOLIDAÇÃO
     function obterEventosConsolidados() {
         let eventosMap = {};
 
@@ -816,16 +1034,13 @@
             return;
         }
 
-        let linhasExibidas = 0;
-
         chavesLotes.forEach(loteChave => {
             const ev = eventosMap[loteChave];
-            const estaAssinado = !!assinaturasEventos[loteChave];
+            const dadosAssinatura = assinaturasEventos[loteChave];
+            const estaAssinado = !!dadosAssinatura;
             
             if (filtroStatus === 'pendente' && estaAssinado) return;
             if (filtroStatus === 'assinado' && !estaAssinado) return;
-
-            linhasExibidas++;
 
             const statusTag = estaAssinado 
                 ? '<span class="badge badge-signed">✅ ASSINADO E CONCLUÍDO</span>' 
@@ -833,7 +1048,6 @@
 
             const datasArray = Array.from(ev.salasComDatas);
             const primeiraData = datasArray.length > 0 ? datasArray[0].split('(')[1]?.replace(')', '') : '';
-
             const tituloExibicao = estaAssinado && primeiraData ? `${ev.nomeEvento} (${primeiraData})` : ev.nomeEvento;
 
             tbody.innerHTML += `
@@ -843,19 +1057,13 @@
                     <td><span class="badge" style="background:#e2e8f0; color:#333;">${ev.totalLancamentos} lançamento(s)</span></td>
                     <td>${statusTag}</td>
                     <td>
-                        <button class="btn btn-success" onclick="abrirModalAssinatura('${loteChave}')">${estaAssinado ? '🔍 Ver Extrato' : '✍️ Coletar Assinatura Única'}</button>
-                        <button class="btn btn-secondary" onclick="gerarPDFDetalhado('${loteChave}')">🖨️ PDF Detalhado</button>
+                        <button class="btn btn-success" onclick="abrirModalAssinatura('${loteChave}')">🔍 Ver Extrato</button>
                     </td>
                 </tr>
             `;
         });
-
-        if (linhasExibidas === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#777;">Nenhum registro encontrado para o filtro selecionado.</td></tr>';
-        }
     }
 
-    // HISTÓRICO COM FILTROS
     function renderizarHistorico() {
         const container = document.getElementById('containerHistoricoCards');
         if (!container) return;
@@ -863,6 +1071,7 @@
         const termoBusca = (document.getElementById('buscaHistorico')?.value || '').toLowerCase().trim();
         const dtInicio = document.getElementById('filtroDataInicio')?.value;
         const dtFim = document.getElementById('filtroDataFim')?.value;
+        const isGerente = (usuarioLogado && usuarioLogado.cargo === 'Gerente / Supervisor');
 
         container.innerHTML = '';
 
@@ -872,9 +1081,13 @@
         }
 
         const fichasFiltradas = fichas.filter(f => {
+            const operLancamento = f.usuarioLancamento ? f.usuarioLancamento.nome.toLowerCase() : '';
+            const operDevolucao = f.usuarioDevolucao ? f.usuarioDevolucao.nome.toLowerCase() : '';
             const matchTexto = f.evento.toLowerCase().includes(termoBusca) || 
                                f.sala.toLowerCase().includes(termoBusca) ||
-                               f.dataConsumo.includes(termoBusca);
+                               f.dataConsumo.includes(termoBusca) ||
+                               operLancamento.includes(termoBusca) ||
+                               operDevolucao.includes(termoBusca);
 
             const dataIsoFicha = converterDataBRparaISO(f.dataConsumo);
             let matchData = true;
@@ -885,15 +1098,10 @@
             return matchTexto && matchData;
         });
 
-        if (fichasFiltradas.length === 0) {
-            container.innerHTML = '<div style="text-align:center; color:#777; padding:20px;">Nenhum lançamento encontrado para os filtros selecionados.</div>';
-            return;
-        }
-
         fichasFiltradas.forEach(f => {
             const evKey = f.loteChave || f.evento.toUpperCase();
             const listaExibir = f.itens && f.itens.length > 0 ? f.itens : (f.itensSaida || []);
-            const prefixoStatus = (f.statusAtendimento === 'Em Atendimento (Aguardando Devolução)' || f.statusTurno === 'Aguardando Retorno (Manhã)') ? '🟡 (Em Atendimento) ' : '';
+            const prefixoStatus = f.statusAtendimento === 'Em Atendimento (Aguardando Devolução)' ? '🟡 (Em Atendimento) ' : '';
 
             const chipsItens = listaExibir.map(i => {
                 const precoAjustado = precosAjustadosEventos[evKey]?.[i.itemNome];
@@ -902,6 +1110,18 @@
                 return `<span class="item-chip">${i.itemNome}: <strong>${i.qtd}</strong> (R$ ${totalItem.toFixed(2)})</span>`;
             }).join('');
 
+            const btnExcluirHtml = isGerente 
+                ? `<button class="btn btn-danger btn-sm" onclick="excluirLancamentoHistorico('${f.id}')">🗑️ Excluir</button>` 
+                : '';
+
+            const nomeLancador = f.usuarioLancamento ? f.usuarioLancamento.nome : 'N/I';
+            const nomeDevolvedor = f.usuarioDevolucao ? f.usuarioDevolucao.nome : 'Pendente';
+            
+            const dadosAssinatura = assinaturasEventos[evKey];
+            const nomeAssinador = (dadosAssinatura && typeof dadosAssinatura === 'object' && dadosAssinatura.usuario) 
+                ? dadosAssinatura.usuario.nome 
+                : (dadosAssinatura ? 'Sim (Assinado)' : 'Pendente');
+
             container.innerHTML += `
                 <div class="historico-card">
                     <div class="historico-header">
@@ -909,14 +1129,13 @@
                             <strong style="color:var(--primary); font-size:16px;">${prefixoStatus}${f.evento}</strong>
                             <span class="badge" style="background:#e2e8f0; color:#2c3e50;">📅 ${f.dataConsumo}</span>
                             <span class="badge" style="background:#e8f0fe; color:var(--primary);">📍 ${f.sala}</span>
+                            <span class="badge" style="background:#fef3c7; color:#92400e;">👤 Lançado: ${nomeLancador}</span>
+                            <span class="badge" style="background:#e0f2fe; color:#0369a1;">📥 Devolvido: ${nomeDevolvedor}</span>
+                            <span class="badge" style="background:#dcfce7; color:#15803d;">✍️ Assinado: ${nomeAssinador}</span>
                         </div>
-                        <div>
-                            <button class="btn btn-danger btn-sm" onclick="excluirLancamentoHistorico('${f.id}')">🗑️ Excluir</button>
-                        </div>
+                        <div>${btnExcluirHtml}</div>
                     </div>
-                    <div class="historico-itens">
-                        ${chipsItens}
-                    </div>
+                    <div class="historico-itens">${chipsItens}</div>
                 </div>
             `;
         });
@@ -930,21 +1149,32 @@
     }
 
     function excluirLancamentoHistorico(idFicha) {
+        if (!usuarioLogado || usuarioLogado.cargo !== 'Gerente / Supervisor') {
+            return alert('Apenas administradores podem excluir lançamentos.');
+        }
+
         if (confirm('Tem certeza que deseja excluir este lançamento do banco de dados?')) {
+            const f = fichas.find(x => x.id === idFicha);
             database.ref('fichas/' + idFicha).remove();
+            registrarLog('EXCLUSÃO', `Excluiu lançamento do evento ${f?.evento} (Sala ${f?.sala}).`);
         }
     }
 
-    // ESTOQUE
     function cadastrarItemEstoque() {
+        if (!usuarioLogado || usuarioLogado.cargo !== 'Gerente / Supervisor') {
+            return alert('Apenas administradores podem cadastrar estoque.');
+        }
+
         const nome = document.getElementById('novoItemNome').value.trim();
         const qtd = parseInt(document.getElementById('novoItemQtd').value, 10) || 0;
         const valorUnitario = parseFloat(document.getElementById('novoItemValor').value) || 0;
         if (!nome) return alert('Digite o nome do item.');
         
-        estoque.push({ id: Date.now().toString(), nome, qtd, valorUnitario });
+        const novoItem = { id: Date.now().toString(), nome, qtd, valorUnitario };
+        estoque.push(novoItem);
         database.ref('estoque').set(estoque);
-        
+
+        registrarLog('ESTOQUE', `Cadastrou novo item: ${nome} (Qtd: ${qtd}, R$ ${valorUnitario.toFixed(2)}).`);
         document.getElementById('novoItemNome').value = '';
         document.getElementById('novoItemValor').value = '0.00';
     }
@@ -954,18 +1184,24 @@
         if(!tbody) return;
         tbody.innerHTML = '';
 
+        const isGerente = (usuarioLogado && usuarioLogado.cargo === 'Gerente / Supervisor');
+
         estoque.forEach(item => {
             const vUnit = item.valorUnitario || 0;
+            const botoesAcaoHtml = isGerente ? `
+                <td style="text-align: center;">
+                    <button class="btn btn-warning btn-sm" onclick="abrirModalEditarEstoque('${item.id}')">✏️ Editar</button>
+                    <button class="btn btn-danger btn-sm" onclick="excluirItemEstoque('${item.id}')">🗑️ Excluir</button>
+                </td>
+            ` : '';
+
             tbody.innerHTML += `
                 <tr>
                     <td>#${item.id.slice(-4)}</td>
                     <td><strong>${item.nome}</strong></td>
                     <td>${item.qtd}</td>
                     <td>R$ ${vUnit.toFixed(2)}</td>
-                    <td style="text-align: center;">
-                        <button class="btn btn-warning btn-sm" onclick="abrirModalEditarEstoque('${item.id}')">✏️ Editar</button>
-                        <button class="btn btn-danger btn-sm" onclick="excluirItemEstoque('${item.id}')">🗑️ Excluir</button>
-                    </td>
+                    ${botoesAcaoHtml}
                 </tr>
             `;
         });
@@ -999,18 +1235,21 @@
             item.qtd = Math.max(0, novaQtd);
             item.valorUnitario = Math.max(0, novoValor);
             database.ref('estoque').set(estoque);
+            
+            registrarLog('ESTOQUE', `Editou item ${novoNome}: Saldo ${novaQtd}, Valor R$ ${novoValor.toFixed(2)}.`);
             fecharModalEditar();
         }
     }
 
     function excluirItemEstoque(id) {
         if (confirm('Excluir este item do estoque?')) {
-            estoque = estoque.filter(item => item.id !== id);
+            const item = estoque.find(i => i.id === id);
+            estoque = estoque.filter(i => i.id !== id);
             database.ref('estoque').set(estoque);
+            registrarLog('ESTOQUE', `Excluiu item do estoque: ${item?.nome}.`);
         }
     }
 
-    // MODAL DE ASSINATURA E RECALCULO EM TEMPO REAL
     const canvas = document.getElementById('canvasAssinatura');
     const ctx = canvas.getContext('2d');
     let desenhando = false;
@@ -1039,32 +1278,9 @@
 
         precosAjustadosEventos[eventoAtualNome] = mapaPrecosAtualizados;
 
-        ev.fichas.forEach(f => {
-            let totalDia = 0;
-            if(f.itens) {
-                f.itens.forEach(i => {
-                    const vUnit = mapaPrecosAtualizados[i.itemNome] !== undefined ? mapaPrecosAtualizados[i.itemNome] : (i.valorUnitario || 0);
-                    const vTotal = i.qtd * vUnit;
-                    totalDia += vTotal;
-
-                    const celulaUnitDia = document.getElementById(`unit_${f.id}_${i.itemNome.replace(/\s+/g, '_')}`);
-                    if (celulaUnitDia) {
-                        celulaUnitDia.innerText = `R$ ${vUnit.toFixed(2)}`;
-                    }
-
-                    const celulaTotalDia = document.getElementById(`tot_${f.id}_${i.itemNome.replace(/\s+/g, '_')}`);
-                    if (celulaTotalDia) {
-                        celulaTotalDia.innerText = `R$ ${vTotal.toFixed(2)}`;
-                    }
-                });
-            }
-        });
-
         let totalGeralGeral = 0;
         Object.keys(ev.itensTotais).forEach(itemNome => {
-            const qtdTotal = ev.itensTotais[itemNome].qtd;
-            const vUnit = mapaPrecosAtualizados[itemNome];
-            totalGeralGeral += (qtdTotal * vUnit);
+            totalGeralGeral += (ev.itensTotais[itemNome].qtd * mapaPrecosAtualizados[itemNome]);
         });
 
         const boxTotal = document.querySelector('.total-geral-box');
@@ -1079,28 +1295,42 @@
         const ev = eventosMap[evKey];
         if (!ev) return;
 
-        const estaAssinado = !!assinaturasEventos[evKey];
+        const dadosAssinatura = assinaturasEventos[evKey];
+        const estaAssinado = !!dadosAssinatura;
+        const cargo = usuarioLogado ? usuarioLogado.cargo : '';
+        const podeAssinar = (cargo === 'Pessoal de Eventos' || cargo === 'Gerente / Supervisor');
+        const isGerente = (cargo === 'Gerente / Supervisor');
 
         document.getElementById('resumoEvento').innerText = ev.nomeEvento;
         document.getElementById('resumoSalas').innerText = Array.from(ev.salasComDatas).join(', ');
+
+        const resumoAssinador = document.getElementById('resumoAssinador');
+        if (estaAssinado && typeof dadosAssinatura === 'object' && dadosAssinatura.usuario) {
+            resumoAssinador.style.display = 'block';
+            resumoAssinador.innerText = `✍️ Assinatura colhida por: ${dadosAssinatura.usuario.nome}`;
+        } else {
+            resumoAssinador.style.display = 'none';
+        }
 
         const diasContainer = document.getElementById('detalhamentoDiasContainer');
         diasContainer.innerHTML = '';
 
         ev.fichas.forEach((f) => {
             const listaItens = f.itens && f.itens.length > 0 ? f.itens : (f.itensSaida || []);
+            const operadorSaida = f.usuarioLancamento ? f.usuarioLancamento.nome : 'N/I';
+            const operadorRetorno = f.usuarioDevolucao ? f.usuarioDevolucao.nome : 'Pendente';
+            
             let linhasItens = listaItens.map(i => {
                 const precoAjustado = precosAjustadosEventos[evKey]?.[i.itemNome];
                 const vUnit = precoAjustado !== undefined ? precoAjustado : (i.valorUnitario !== undefined ? i.valorUnitario : 0);
                 const vTotal = i.qtd * vUnit;
-                const safeItemName = i.itemNome.replace(/\s+/g, '_');
 
                 return `
                     <tr>
                         <td style="text-align:left;">${i.itemNome}</td>
                         <td style="text-align:center; font-weight:bold;">${i.qtd}</td>
-                        <td id="unit_${f.id}_${safeItemName}" style="text-align:center;">R$ ${vUnit.toFixed(2)}</td>
-                        <td id="tot_${f.id}_${safeItemName}" style="text-align:right; font-weight:bold;">R$ ${vTotal.toFixed(2)}</td>
+                        <td style="text-align:center;">R$ ${vUnit.toFixed(2)}</td>
+                        <td style="text-align:right; font-weight:bold;">R$ ${vTotal.toFixed(2)}</td>
                     </tr>
                 `;
             }).join('');
@@ -1108,8 +1338,10 @@
             diasContainer.innerHTML += `
                 <div class="dia-bloco">
                     <div class="dia-titulo">
-                        <span>📅 Data: <strong>${f.dataConsumo}</strong></span>
-                        <span>📍 Sala: <strong>${f.sala}</strong></span>
+                        <span>📅 Data: <strong>${f.dataConsumo}</strong> | 📍 Sala: <strong>${f.sala}</strong></span>
+                        <span style="color:#64748b; font-weight:normal;">
+                            📤 Saída: <strong>${operadorSaida}</strong> | 📥 Retorno: <strong>${operadorRetorno}</strong>
+                        </span>
                     </div>
                     <table class="resumo-table">
                         <thead>
@@ -1142,7 +1374,7 @@
                     <td style="text-align:center;">
                         <input type="number" id="modal_price_${safeId}" step="0.01" value="${vUnit.toFixed(2)}" 
                             style="width: 90px; padding: 4px; font-weight: bold; text-align: center;" 
-                            oninput="atualizarCalculosModalAssinatura()" ${estaAssinado ? 'disabled' : ''}>
+                            oninput="atualizarCalculosModalAssinatura()" ${(estaAssinado || !isGerente) ? 'disabled' : ''}>
                     </td>
                     <td id="modal_total_${safeId}" style="text-align:right; font-weight:bold; color:var(--primary); font-size:15px;">
                         R$ ${(itemData.qtd * vUnit).toFixed(2)}
@@ -1152,31 +1384,47 @@
         });
 
         atualizarCalculosModalAssinatura();
-
         document.getElementById('modalAssinatura').style.display = 'flex';
 
         canvas.width = canvas.parentElement.clientWidth - 50;
         canvas.height = 160;
 
-        const btnLimpar = document.getElementById('btnLimparAssinatura');
         const btnSalvar = document.getElementById('btnSalvarAssinatura');
-        const tituloAssinatura = document.getElementById('tituloAssinatura');
+        const btnLimpar = document.getElementById('btnLimparAssinatura');
+        const avisoBloqueio = document.getElementById('avisoBloqueioAssinatura');
 
         if(estaAssinado) {
             let img = new Image();
             img.onload = function() { ctx.drawImage(img, 0, 0); };
-            img.src = assinaturasEventos[evKey];
+            img.src = (typeof dadosAssinatura === 'object') ? dadosAssinatura.imagem : dadosAssinatura;
 
             canvas.style.pointerEvents = 'none';
             btnLimpar.style.display = 'none';
             btnSalvar.style.display = 'none';
-            tituloAssinatura.innerText = "🔒 Assinatura Homologada e Fechada (Somente Leitura):";
+            avisoBloqueio.style.display = 'none';
+            document.getElementById('tituloAssinatura').innerText = "🔒 Assinatura Homologada e Fechada (Somente Leitura):";
+        } else if (!podeAssinar) {
+            limparCanvas();
+            canvas.style.pointerEvents = 'none';
+            btnLimpar.className = "btn btn-disabled";
+            btnLimpar.disabled = true;
+            btnSalvar.className = "btn btn-disabled";
+            btnSalvar.disabled = true;
+            btnSalvar.innerText = "🔒 Assinatura Bloqueada";
+            avisoBloqueio.style.display = 'block';
+            document.getElementById('tituloAssinatura').innerText = "🔒 Campo de Assinatura (Bloqueado para seu Perfil):";
         } else {
             limparCanvas();
             canvas.style.pointerEvents = 'auto';
+            btnLimpar.className = "btn btn-danger";
+            btnLimpar.disabled = false;
             btnLimpar.style.display = 'inline-flex';
+            btnSalvar.className = "btn btn-success";
+            btnSalvar.disabled = false;
+            btnSalvar.innerText = "Confirmar Assinatura";
             btnSalvar.style.display = 'inline-flex';
-            tituloAssinatura.innerText = "✍️ Assinatura de Aceite e Fechamento Final do Evento:";
+            avisoBloqueio.style.display = 'none';
+            document.getElementById('tituloAssinatura').innerText = "✍️ Assinatura de Aceite e Fechamento Final do Evento:";
         }
     }
 
@@ -1198,7 +1446,10 @@
     }
 
     function iniciarDesenho(e) { 
-        if (assinaturasEventos[eventoAtualNome]) return;
+        const cargo = usuarioLogado ? usuarioLogado.cargo : '';
+        const podeAssinar = (cargo === 'Pessoal de Eventos' || cargo === 'Gerente / Supervisor');
+        if (assinaturasEventos[eventoAtualNome] || !podeAssinar) return;
+
         desenhando = true; 
         ctx.beginPath(); 
         const pos = getPos(e); 
@@ -1206,7 +1457,10 @@
     }
 
     function desenhar(e) {
-        if (!desenhando || assinaturasEventos[eventoAtualNome]) return;
+        const cargo = usuarioLogado ? usuarioLogado.cargo : '';
+        const podeAssinar = (cargo === 'Pessoal de Eventos' || cargo === 'Gerente / Supervisor');
+        if (!desenhando || assinaturasEventos[eventoAtualNome] || !podeAssinar) return;
+
         e.preventDefault();
         const pos = getPos(e);
         ctx.lineWidth = 3;
@@ -1221,181 +1475,51 @@
     canvas.addEventListener('mousedown', iniciarDesenho);
     canvas.addEventListener('mousemove', desenhar);
     canvas.addEventListener('mouseup', pararDesenho);
-
     canvas.addEventListener('touchstart', iniciarDesenho);
     canvas.addEventListener('touchmove', desenhar);
     canvas.addEventListener('touchend', pararDesenho);
 
     function salvarAssinatura() {
+        const cargo = usuarioLogado ? usuarioLogado.cargo : '';
+        if (cargo !== 'Pessoal de Eventos' && cargo !== 'Gerente / Supervisor') {
+            return alert('Seu perfil não tem permissão para assinar o encerramento do evento.');
+        }
+
         if (eventoAtualNome) {
-            if (assinaturasEventos[eventoAtualNome]) {
-                return alert('Este evento já foi assinado e encerrado.');
-            }
+            if (assinaturasEventos[eventoAtualNome]) return alert('Este evento já foi assinado e encerrado.');
 
             const dataUrl = canvas.toDataURL('image/png');
             
-            database.ref('assinaturas/' + eventoAtualNome).set(dataUrl);
+            const objetoAssinatura = {
+                imagem: dataUrl,
+                usuario: {
+                    nome: usuarioLogado.nome,
+                    email: usuarioLogado.email
+                }
+            };
+            
+            database.ref('assinaturas/' + eventoAtualNome).set(objetoAssinatura);
             if (precosAjustadosEventos[eventoAtualNome]) {
                 database.ref('precosAjustados/' + eventoAtualNome).set(precosAjustadosEventos[eventoAtualNome]);
             }
 
+            registrarLog('ASSINATURA', `Coletou a assinatura digital do evento ${eventoAtualNome}.`);
             fecharModal();
-            alert(`Assinatura gravada com sucesso! O evento está travado para alterações.`);
+            alert(`Assinatura gravada com sucesso! O evento foi homologado por ${usuarioLogado.nome}.`);
         }
     }
 
     function limparHistorico() {
+        if (!usuarioLogado || usuarioLogado.cargo !== 'Gerente / Supervisor') {
+            return alert('Apenas administradores podem apagar o histórico geral.');
+        }
+
         if (confirm('Atenção: deseja apagar permanentemente todas as fichas, preços e assinaturas salvas no Firebase?')) {
             database.ref('fichas').remove();
             database.ref('assinaturas').remove();
             database.ref('precosAjustados').remove();
+            registrarLog('LIMPEZA', `Limpou todo o histórico de lançamentos do banco.`);
         }
-    }
-
-    function gerarPDFDetalhado(loteChave) {
-        const eventosMap = obterEventosConsolidados();
-        const ev = eventosMap[loteChave];
-
-        if (!ev) {
-            return alert("Não foram encontrados dados para gerar o PDF deste evento.");
-        }
-
-        const estaAssinado = !!assinaturasEventos[loteChave];
-        const assinaturaDataUrl = assinaturasEventos[loteChave] || null;
-
-        const datasArray = Array.from(ev.salasComDatas);
-        const primeiraData = datasArray.length > 0 ? datasArray[0].split('(')[1]?.replace(')', '') : '';
-        const tituloExibicao = estaAssinado && primeiraData ? `${ev.nomeEvento} (${primeiraData})` : ev.nomeEvento;
-
-        const win = window.open('', '_blank');
-        if (!win) return alert("Por favor, permita pop-ups no seu navegador para gerar o PDF.");
-
-        let htmlDias = '';
-        ev.fichas.forEach(f => {
-            const listaItens = f.itens && f.itens.length > 0 ? f.itens : (f.itensSaida || []);
-            let linhasItens = listaItens.map(i => {
-                const precoAjustado = precosAjustadosEventos[loteChave]?.[i.itemNome];
-                const vUnit = precoAjustado !== undefined ? precoAjustado : (i.valorUnitario || 0);
-                return `
-                    <tr>
-                        <td>${i.itemNome}</td>
-                        <td style="text-align:center;">${i.qtd}</td>
-                        <td style="text-align:center;">R$ ${vUnit.toFixed(2)}</td>
-                        <td style="text-align:right;">R$ ${(i.qtd * vUnit).toFixed(2)}</td>
-                    </tr>
-                `;
-            }).join('');
-
-            htmlDias += `
-                <div style="border:1px solid #ccc; padding:10px; margin-bottom:12px; border-radius:4px;">
-                    <div style="font-weight:bold; color:#00463f; border-bottom:1px solid #eee; padding-bottom:4px; margin-bottom:8px; display:flex; justify-content:space-between;">
-                        <span>📅 Data: ${f.dataConsumo}</span>
-                        <span>📍 Sala: ${f.sala}</span>
-                    </div>
-                    <table style="width:100%; border-collapse:collapse; font-size:12px;">
-                        <thead>
-                            <tr style="background:#f4f6f8;">
-                                <th style="text-align:left; padding:4px;">Item Consumido</th>
-                                <th style="text-align:center; padding:4px;">Qtd</th>
-                                <th style="text-align:center; padding:4px;">Valor Unit.</th>
-                                <th style="text-align:right; padding:4px;">Valor Total</th>
-                            </tr>
-                        </thead>
-                        <tbody>${linhasItens}</tbody>
-                    </table>
-                </div>
-            `;
-        });
-
-        let htmlTotalGeral = '';
-        let totalGeralValor = 0;
-        Object.keys(ev.itensTotais).forEach(itemNome => {
-            const itemData = ev.itensTotais[itemNome];
-            const precoAjustado = precosAjustadosEventos[loteChave]?.[itemNome];
-            const vUnit = precoAjustado !== undefined ? precoAjustado : itemData.valorUnitario;
-            const totalLinha = itemData.qtd * vUnit;
-            totalGeralValor += totalLinha;
-
-            htmlTotalGeral += `
-                <tr>
-                    <td style="padding:6px; font-weight:bold;">${itemNome}</td>
-                    <td style="padding:6px; text-align:center; font-weight:bold;">${itemData.qtd}</td>
-                    <td style="padding:6px; text-align:center;">R$ ${vUnit.toFixed(2)}</td>
-                    <td style="padding:6px; text-align:right; font-weight:bold;">R$ ${totalLinha.toFixed(2)}</td>
-                </tr>
-            `;
-        });
-
-        const htmlAssinatura = estaAssinado && assinaturaDataUrl
-            ? `<div style="margin-top:20px; text-align:center; border-top:1px dashed #ccc; padding-top:15px;">
-                 <p style="font-size:12px; font-weight:bold; color:#00463f; margin-bottom:5px;">Assinatura de Aceite e Fechamento Final:</p>
-                 <img src="${assinaturaDataUrl}" style="max-height:100px; border:1px solid #ddd; padding:5px; border-radius:4px;">
-               </div>`
-            : `<div style="margin-top:30px; text-align:center; font-style:italic; color:#777; border-top:1px dashed #ccc; padding-top:15px;">
-                 (Documento pendente de assinatura do cliente)
-               </div>`;
-
-        win.document.write(`
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <title>Extrato A&B - ${tituloExibicao}</title>
-                <style>
-                    body { font-family: 'Segoe UI', Tahoma, Arial, sans-serif; padding: 20px; color: #333; }
-                    .header { border-bottom: 3px solid #00463f; padding-bottom: 10px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
-                    .title { font-size: 18px; font-weight: bold; color: #00463f; }
-                    .info-box { background: #e8f0fe; padding: 10px; border-radius: 4px; font-size: 13px; margin-bottom: 15px; border-left: 4px solid #00463f; }
-                    table { width: 100%; border-collapse: collapse; margin-top: 5px; }
-                    th, td { border-bottom: 1px solid #ddd; }
-                    th { background: #00463f; color: #fff; text-align: left; padding: 6px; font-size: 12px; }
-                    .total-box { background: #00332e; color: #fff; padding: 8px; border-radius: 4px; font-weight: bold; text-align: center; margin-top: 15px; }
-                </style>
-            </head>
-            <body>
-                <div class="header">
-                    <div class="title">Bourbon Hotéis & Resorts - Extrato de Consumo A&B</div>
-                    <div style="font-size:12px; color:#666;">Emitido em: ${new Date().toLocaleDateString('pt-BR')}</div>
-                </div>
-
-                <div class="info-box">
-                    <div><strong>Evento:</strong> ${tituloExibicao}</div>
-                    <div><strong>Salas / Datas Atendidas:</strong> ${datasArray.join(', ')}</div>
-                </div>
-
-                <h4 style="color:#00463f; margin-bottom:8px;">Detalhamento por Data / Ambiente</h4>
-                ${htmlDias}
-
-                <div class="total-box">CONSOLIDADO GERAL DE CONSUMO</div>
-                <table style="margin-bottom:15px; border:1px solid #00463f; font-size:13px;">
-                    <thead>
-                        <tr>
-                            <th>Descrição do Item</th>
-                            <th style="text-align:center; width:100px;">Qtd Consumida</th>
-                            <th style="text-align:center; width:110px;">Valor Unit.</th>
-                            <th style="text-align:right; width:110px;">Valor Total</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${htmlTotalGeral}
-                    </tbody>
-                </table>
-
-                <div style="text-align:right; font-size:15px; font-weight:bold; color:#00463f; margin-bottom:20px;">
-                    Valor Total Concluído: ${totalGeralValor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                </div>
-
-                ${htmlAssinatura}
-
-                <script>
-                    window.onload = function() {
-                        setTimeout(() => { window.print(); }, 500);
-                    };
-                <\/script>
-            </body>
-            </html>
-        `);
-
-        win.document.close();
     }
 </script>
 
