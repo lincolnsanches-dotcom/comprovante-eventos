@@ -6,33 +6,42 @@
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        .slide-container { width: 960px; height: 580px; background: white; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); display: none; flex-direction: column; justify-content: space-between; padding: 40px; position: relative; overflow: hidden; }
+        .slide-container { width: 960px; height: 580px; background: white; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); display: none; flex-direction: column; justify-content: space-between; padding: 30px 40px; position: relative; overflow: hidden; }
         .active { display: flex; }
-        .header { border-bottom: 2px solid #00463f; padding-bottom: 10px; margin-bottom: 20px; }
-        .header h2 { color: #00463f; font-size: 24px; }
+        .header { border-bottom: 2px solid #00463f; padding-bottom: 8px; margin-bottom: 15px; }
+        .header h2 { color: #00463f; font-size: 22px; }
         .content { display: flex; gap: 20px; flex: 1; align-items: center; }
-        .text-side { flex: 1; }
-        .text-side ul { list-style: none; }
-        .text-side li { margin-bottom: 14px; font-size: 15px; color: #333; line-height: 1.4; position: relative; padding-left: 22px; }
-        .text-side li::before { content: "✔"; position: absolute; left: 0; color: #00463f; font-weight: bold; }
-        .img-side { flex: 1.2; display: flex; gap: 10px; justify-content: center; align-items: center; flex-wrap: wrap; }
-        .img-side img { max-width: 100%; max-height: 320px; object-fit: contain; border-radius: 6px; border: 1px solid #ccc; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-        .img-side.grid-2 img { width: 48%; max-height: 250px; }
-        .img-side.grid-3 img { width: 31%; max-height: 220px; }
-        .footer { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #eee; pt: 10px; margin-top: 15px; color: #777; font-size: 12px; }
-        .cover { justify-content: center; align-items: center; text-align: center; background-color: #00463f; color: white; }
         
-        /* Exibe apenas o arquivo logo1.png puro */
-        .cover img { 
-            height: 95px; 
-            margin-bottom: 25px; 
-            object-fit: contain; 
-            border-radius: 4px;
-        }
+        /* Lado do texto */
+        .text-side { flex: 0.9; min-width: 250px; }
+        .text-side ul { list-style: none; }
+        .text-side li { margin-bottom: 14px; font-size: 14px; color: #333; line-height: 1.4; position: relative; padding-left: 20px; }
+        .text-side li::before { content: "✔"; position: absolute; left: 0; color: #00463f; font-weight: bold; }
+        
+        /* Lado das imagens */
+        .img-side { flex: 2.2; display: flex; gap: 15px; justify-content: center; align-items: center; width: 100%; }
+        .img-side img { max-width: 100%; max-height: 430px; object-fit: contain; border-radius: 6px; border: 1px solid #ccc; box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
+        .img-side.grid-2 img { width: 49%; max-height: 400px; }
+        .img-side.grid-3 img { width: 32%; max-height: 380px; }
+        
+        .footer { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #eee; pt: 8px; margin-top: 10px; color: #777; font-size: 12px; }
+        .cover { justify-content: center; align-items: center; text-align: center; background-color: #00463f !important; color: white !important; }
+        .cover img { height: 95px; margin-bottom: 25px; object-fit: contain; border-radius: 4px; }
+        .cover h1 { font-size: 38px; margin-bottom: 10px; color: white !important; }
+        .cover h3 { font-size: 20px; font-weight: 300; opacity: 0.9; margin-bottom: 30px; color: white !important; }
+        .cover p { font-size: 15px; opacity: 0.8; color: white !important; }
 
-        .cover h1 { font-size: 38px; margin-bottom: 10px; }
-        .cover h3 { font-size: 20px; font-weight: 300; opacity: 0.9; margin-bottom: 30px; }
-        .cover p { font-size: 15px; opacity: 0.8; }
+        /* REGRA PARA IMPRESSÃO EM PDF */
+        @media print {
+            @page { size: landscape; margin: 0; }
+            body { background: none; display: block; }
+            .slide-container { display: flex !important; page-break-after: always; width: 100vw; height: 100vh; border-radius: 0; box-shadow: none; border: none; padding: 25px 35px; }
+            .img-side img { max-height: 450px !important; }
+            .img-side.grid-2 img { max-height: 420px !important; }
+            .img-side.grid-3 img { max-height: 390px !important; }
+            .no-print { display: none !important; }
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        }
     </style>
 </head>
 <body>
@@ -53,9 +62,9 @@
         <div class="content">
             <div class="text-side">
                 <ul>
-                    <li><strong>Autenticação Individual:</strong> Login corporativo com senha encriptada[cite: 1].</li>
-                    <li><strong>Perfis de Acesso:</strong> Interface adaptada para Atendente, Garçom, Pessoal de Eventos e Gerente[cite: 1].</li>
-                    <li><strong>Segurança:</strong> Cadastro de usuários restrito e controle total de permissões[cite: 1].</li>
+                    <li><strong>Autenticação Individual:</strong> Login corporativo com senha encriptada.</li>
+                    <li><strong>Perfis de Acesso:</strong> Interface adaptada para Atendente, Garçom, Pessoal de Eventos e Gerente.</li>
+                    <li><strong>Segurança:</strong> Cadastro de usuários restrito e controle total de permissões.</li>
                 </ul>
             </div>
             <div class="img-side grid-3">
@@ -75,9 +84,9 @@
         <div class="content">
             <div class="text-side">
                 <ul>
-                    <li><strong>Saída de Materiais:</strong> Lançamento inicial dos itens enviados para as salas de eventos[cite: 1].</li>
-                    <li><strong>Painel de Pendências:</strong> Visão em tempo real das fichas abertas aguardando devolução[cite: 1].</li>
-                    <li><strong>Cálculo Automático:</strong> Registro das sobras com abatimento e valor final gerado na hora[cite: 1].</li>
+                    <li><strong>Saída de Materiais:</strong> Lançamento inicial dos itens enviados para as salas de eventos.</li>
+                    <li><strong>Painel de Pendências:</strong> Visão em tempo real das fichas abertas aguardando devolução.</li>
+                    <li><strong>Cálculo Automático:</strong> Registro das sobras com abatimento e valor final gerado na hora.</li>
                 </ul>
             </div>
             <div class="img-side grid-2">
@@ -88,7 +97,7 @@
         <div class="footer"><span class="page-num">Slide 3 de 6</span></div>
     </div>
 
-    <!-- Slide 4: Extrato e Assinatura -->
+    <!-- Slide 4: Extrato e Assinatura Digital (ATUALIZADO COM AS 2 IMAGENS) -->
     <div class="slide-container">
         <div class="header">
             <h2>3. Resumo Consolidado e Assinatura Digital</h2>
@@ -96,13 +105,14 @@
         <div class="content">
             <div class="text-side">
                 <ul>
-                    <li><strong>Visão Agrupada:</strong> Agrupamento de todas as salas e datas do mesmo evento[cite: 1].</li>
-                    <li><strong>Status Transparente:</strong> Acompanhamento do estado de homologação ("Aguardando Assinatura")[cite: 1].</li>
-                    <li><strong>Validação Digital:</strong> Coleta de assinatura do cliente na própria tela para fechamento[cite: 1].</li>
+                    <li><strong>Visão Agrupada:</strong> Agrupamento de todas as salas e datas do mesmo evento.</li>
+                    <li><strong>Status Transparente:</strong> Acompanhamento do estado de homologação ("Aguardando Assinatura").</li>
+                    <li><strong>Validação Digital:</strong> Coleta de assinatura de aceite e fechamento final do evento na própria tela.</li>
                 </ul>
             </div>
-            <div class="img-side">
-                <img src="extrato.png" alt="Extrato">
+            <div class="img-side grid-2">
+                <img src="extrato.png" alt="Extrato do Evento">
+                <img src="assinatura.png" alt="Tela de Assinatura Digital">
             </div>
         </div>
         <div class="footer"><span class="page-num">Slide 4 de 6</span></div>
@@ -116,8 +126,8 @@
         <div class="content">
             <div class="text-side">
                 <ul>
-                    <li><strong>Controle de Saldo:</strong> Atualização em tempo real do inventário e precificação unitária[cite: 1].</li>
-                    <li><strong>Histórico Operacional:</strong> Consulta detalhada por filtros (data, evento, sala e operador)[cite: 1].</li>
+                    <li><strong>Controle de Saldo:</strong> Atualização em tempo real do inventário e precificação unitária.</li>
+                    <li><strong>Histórico Operacional:</strong> Consulta detalhada por filtros (data, evento, sala e operador).</li>
                 </ul>
             </div>
             <div class="img-side grid-2">
@@ -136,8 +146,8 @@
         <div class="content">
             <div class="text-side">
                 <ul>
-                    <li><strong>Rastreabilidade Total:</strong> Módulo "Quem Fez O Quê" registrando usuário, data e hora[cite: 1].</li>
-                    <li><strong>Auditoria de Processos:</strong> Registro de abastecimentos, logins, edições e exclusões[cite: 1].</li>
+                    <li><strong>Rastreabilidade Total:</strong> Módulo "Quem Fez O Quê" registrando usuário, data e hora.</li>
+                    <li><strong>Auditoria de Processos:</strong> Registro de abastecimentos, logins, edições e exclusões.</li>
                 </ul>
             </div>
             <div class="img-side">
@@ -148,7 +158,7 @@
     </div>
 
     <!-- Controles de Navegação Globais -->
-    <div style="position: fixed; bottom: 20px; right: 20px; z-index: 1000;">
+    <div class="no-print" style="position: fixed; bottom: 20px; right: 20px; z-index: 1000;">
         <button onclick="prevSlide()" style="padding: 10px 20px; background: #333; color: white; border: none; border-radius: 4px; cursor: pointer;">◄ Anterior</button>
         <button onclick="nextSlide()" style="padding: 10px 20px; background: #00463f; color: white; border: none; border-radius: 4px; cursor: pointer;">Próximo ►</button>
     </div>

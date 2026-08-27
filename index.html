@@ -95,7 +95,6 @@
 </head>
 <body>
 
-<!-- TELA DE AUTENTICAÇÃO -->
 <div id="telaAuth">
     <div class="auth-card">
         <h2 style="color: var(--primary); margin-bottom: 5px;">Bourbon Hotéis</h2>
@@ -145,7 +144,6 @@
     </div>
 </div>
 
-<!-- CONTAINER PRINCIPAL DO SISTEMA -->
 <div id="appContainer" class="container">
     <header class="app-header">
         <div class="app-header-left">
@@ -166,7 +164,6 @@
         <button id="tabBtnAuditoria" class="tab-btn" onclick="mudarAba('abaAuditoria', event)">📋 Registro de Auditoria (Logs)</button>
     </div>
 
-    <!-- ABA 1: CONSUMO POR SALA -->
     <div id="abaConsumo" class="tab-content active">
         <div id="msgAvisoVisualizacaoConsumo" class="card" style="display: none; background: #fff9e6; border: 1px solid #ffeaa7; color: #d63031;">
             🔒 <strong>Modo de Visualização:</strong> Seu perfil (Pessoal de Eventos) tem permissão apenas para acompanhar os lançamentos das salas.
@@ -260,7 +257,6 @@
         </div>
     </div>
 
-    <!-- ABA 2: FICHAS CONSOLIDADAS / ASSINATURA -->
     <div id="abaPendentes" class="tab-content">
         <h3>📝 Resumo Consolidado de Fichas por Evento</h3>
         <p style="font-size: 13px; color: #666; margin-bottom: 10px;">
@@ -292,7 +288,6 @@
         </table>
     </div>
 
-    <!-- ABA 3: ESTOQUE -->
     <div id="abaEstoque" class="tab-content">
         <div id="cardCadastroEstoque" class="card">
             <h3>Cadastrar Novo Item</h3>
@@ -329,7 +324,6 @@
         </table>
     </div>
 
-    <!-- ABA 4: HISTÓRICO GERAL -->
     <div id="abaRelatorio" class="tab-content">
         <div class="card" style="margin-bottom: 15px;">
             <h3 style="margin-bottom: 10px;">🔍 Filtros do Histórico</h3>
@@ -358,7 +352,6 @@
         <button id="btnLimparTodoHistorico" class="btn btn-danger" onclick="limparHistorico()">🗑️ Limpar Todo o Histórico</button>
     </div>
 
-    <!-- ABA 5: AUDITORIA / LOGS -->
     <div id="abaAuditoria" class="tab-content">
         <h3>📋 Registros de Auditoria (Quem Fez O Quê)</h3>
         <p style="font-size: 13px; color: #666; margin-bottom: 10px;">Histórico das operações realizadas por e-mail e nome de usuário.</p>
@@ -381,7 +374,6 @@
     Desenvolvido por <strong>Lincoln Sanches</strong> &copy; 2026 | Sistema de Controle A&B Bourbon
 </footer>
 
-<!-- MODAL DE EDIÇÃO DE ESTOQUE -->
 <div id="modalEditarEstoque" class="modal">
     <div class="modal-content modal-sm">
         <button class="btn-close-modal" onclick="fecharModalEditar()">✖</button>
@@ -406,7 +398,6 @@
     </div>
 </div>
 
-<!-- MODAL DE EDIÇÃO DO NOME DO EVENTO -->
 <div id="modalEditarEvento" class="modal">
     <div class="modal-content modal-sm">
         <button class="btn-close-modal" onclick="fecharModalEditarEvento()">✖</button>
@@ -429,7 +420,6 @@
     </div>
 </div>
 
-<!-- MODAL DETALHADO DE ASSINATURA -->
 <div id="modalAssinatura" class="modal">
     <div class="modal-content">
         <button class="btn-close-modal" onclick="fecharModal()">✖</button>
@@ -476,7 +466,6 @@
     </div>
 </div>
 
-<!-- SDK FIREBASE -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
@@ -1078,6 +1067,7 @@
                 ? `<button class="btn btn-warning btn-sm" style="margin-left:5px;" onclick="abrirModalEditarEvento('${loteChave}', '${ev.nomeEvento}')">✏️ Editar</button>` 
                 : '';
 
+            // CORREÇÃO: O botão verde de extrato/assinatura é exibido para TODOS os perfis logados
             tbody.innerHTML += `
                 <tr>
                     <td><strong>${tituloExibicao}</strong> ${btnEditar}</td>
@@ -1114,7 +1104,6 @@
 
         let atualizacoes = {};
         
-        // Atualiza o nome do evento em todas as fichas atreladas ao lote original
         fichas.forEach(f => {
             const evNome = f.evento ? f.evento.toUpperCase() : '';
             const lote = f.loteChave || `${evNome}_LOTE_1`;
@@ -1124,7 +1113,6 @@
             }
         });
 
-        // Se houver assinaturas ou preços salvos no lote antigo, migra para a chave do novo lote
         const novoLoteChave = `${novoNomeInput}_LOTE_1`;
         if (assinaturasEventos[loteChaveOriginal]) {
             atualizacoes['assinaturas/' + novoLoteChave] = assinaturasEventos[loteChaveOriginal];
@@ -1341,6 +1329,7 @@
     const ctx = canvas.getContext('2d');
     let desenhando = false;
 
+    // ATUALIZAÇÃO REATIVA DE TODOS OS BLOCOS (SUPERIOR E GERAL) DA MODAL
     function atualizarCalculosModalAssinatura() {
         if (!eventoAtualNome) return;
         const eventosMap = obterEventosConsolidados();
@@ -1365,6 +1354,25 @@
 
         precosAjustadosEventos[eventoAtualNome] = mapaPrecosAtualizados;
 
+        // Atualização Reativa da Tabela Superior (Consumo Detalhado por Dia/Sala)
+        const elementosValorUnit = document.querySelectorAll('.unit-price-dinamico');
+        elementosValorUnit.forEach(el => {
+            const nomeItem = el.getAttribute('data-item');
+            if (mapaPrecosAtualizados[nomeItem] !== undefined) {
+                const novoUnit = mapaPrecosAtualizados[nomeItem];
+                const qtd = parseFloat(el.getAttribute('data-qtd')) || 0;
+                const totalCalculado = qtd * novoUnit;
+
+                el.innerText = `R$ ${novoUnit.toFixed(2)}`;
+
+                const cellTotal = document.getElementById(`total_dia_${el.getAttribute('data-id')}`);
+                if (cellTotal) {
+                    cellTotal.innerText = totalCalculado.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                }
+            }
+        });
+
+        // Recálculo do Total Geral Consolidado
         let totalGeralGeral = 0;
         Object.keys(ev.itensTotais).forEach(itemNome => {
             totalGeralGeral += (ev.itensTotais[itemNome].qtd * mapaPrecosAtualizados[itemNome]);
@@ -1385,9 +1393,8 @@
         const dadosAssinatura = assinaturasEventos[evKey];
         const estaAssinado = !!dadosAssinatura;
         const cargo = usuarioLogado ? usuarioLogado.cargo : '';
-        const podeAssinar = (cargo === 'Pessoal de Eventos' || cargo === 'Gerente / Supervisor');
-        const isGerente = (cargo === 'Gerente / Supervisor');
-
+        const podeAssinar = ['Atendente A&B', 'Garçom Eventos', 'Pessoal de Eventos', 'Gerente / Supervisor'].includes(cargo);
+        
         document.getElementById('resumoEvento').innerText = ev.nomeEvento;
         document.getElementById('resumoSalas').innerText = Array.from(ev.salasComDatas).join(', ');
 
@@ -1402,22 +1409,27 @@
         const diasContainer = document.getElementById('detalhamentoDiasContainer');
         diasContainer.innerHTML = '';
 
-        ev.fichas.forEach((f) => {
+        ev.fichas.forEach((f, idxFicha) => {
             const listaItens = f.itens && f.itens.length > 0 ? f.itens : (f.itensSaida || []);
             const operadorSaida = f.usuarioLancamento ? f.usuarioLancamento.nome : 'N/I';
             const operadorRetorno = f.usuarioDevolucao ? f.usuarioDevolucao.nome : 'Pendente';
             
-            let linhasItens = listaItens.map(i => {
+            let linhasItens = listaItens.map((i, idxItem) => {
                 const precoAjustado = precosAjustadosEventos[evKey]?.[i.itemNome];
                 const vUnit = precoAjustado !== undefined ? precoAjustado : (i.valorUnitario !== undefined ? i.valorUnitario : 0);
                 const vTotal = i.qtd * vUnit;
+                const itemIdUnico = `${idxFicha}_${idxItem}`;
 
                 return `
                     <tr>
                         <td style="text-align:left;">${i.itemNome}</td>
                         <td style="text-align:center; font-weight:bold;">${i.qtd}</td>
-                        <td style="text-align:center;">R$ ${vUnit.toFixed(2)}</td>
-                        <td style="text-align:right; font-weight:bold;">R$ ${vTotal.toFixed(2)}</td>
+                        <td style="text-align:center;" class="unit-price-dinamico" data-item="${i.itemNome}" data-qtd="${i.qtd}" data-id="${itemIdUnico}">
+                            R$ ${vUnit.toFixed(2)}
+                        </td>
+                        <td style="text-align:right; font-weight:bold;" id="total_dia_${itemIdUnico}">
+                            R$ ${vTotal.toFixed(2)}
+                        </td>
                     </tr>
                 `;
             }).join('');
@@ -1454,6 +1466,7 @@
             const precoAjustado = precosAjustadosEventos[evKey]?.[itemNome];
             const vUnit = precoAjustado !== undefined ? precoAjustado : itemData.valorUnitario;
 
+            // CORREÇÃO: Campo de valor ativado para edição antes de colher a assinatura
             tbodyTotalGeral.innerHTML += `
                 <tr>
                     <td style="text-align:left; font-weight:bold;">${itemNome}</td>
@@ -1461,7 +1474,7 @@
                     <td style="text-align:center;">
                         <input type="number" id="modal_price_${safeId}" step="0.01" value="${vUnit.toFixed(2)}" 
                             style="width: 90px; padding: 4px; font-weight: bold; text-align: center;" 
-                            oninput="atualizarCalculosModalAssinatura()" ${(estaAssinado || !isGerente) ? 'disabled' : ''}>
+                            oninput="atualizarCalculosModalAssinatura()" ${estaAssinado ? 'disabled' : ''}>
                     </td>
                     <td id="modal_total_${safeId}" style="text-align:right; font-weight:bold; color:var(--primary); font-size:15px;">
                         R$ ${(itemData.qtd * vUnit).toFixed(2)}
@@ -1534,7 +1547,7 @@
 
     function iniciarDesenho(e) { 
         const cargo = usuarioLogado ? usuarioLogado.cargo : '';
-        const podeAssinar = (cargo === 'Pessoal de Eventos' || cargo === 'Gerente / Supervisor');
+        const podeAssinar = (cargo === 'Pessoal de Eventos' || cargo === 'Gerente / Supervisor' || cargo === 'Atendente A&B' || cargo === 'Garçom Eventos');
         if (assinaturasEventos[eventoAtualNome] || !podeAssinar) return;
 
         desenhando = true; 
@@ -1545,7 +1558,7 @@
 
     function desenhar(e) {
         const cargo = usuarioLogado ? usuarioLogado.cargo : '';
-        const podeAssinar = (cargo === 'Pessoal de Eventos' || cargo === 'Gerente / Supervisor');
+        const podeAssinar = (cargo === 'Pessoal de Eventos' || cargo === 'Gerente / Supervisor' || cargo === 'Atendente A&B' || cargo === 'Garçom Eventos');
         if (!desenhando || assinaturasEventos[eventoAtualNome] || !podeAssinar) return;
 
         e.preventDefault();
@@ -1567,10 +1580,7 @@
     canvas.addEventListener('touchend', pararDesenho);
 
     function salvarAssinatura() {
-        const cargo = usuarioLogado ? usuarioLogado.cargo : '';
-        if (cargo !== 'Pessoal de Eventos' && cargo !== 'Gerente / Supervisor') {
-            return alert('Seu perfil não tem permissão para assinar o encerramento do evento.');
-        }
+        if (!usuarioLogado) return;
 
         if (eventoAtualNome) {
             if (assinaturasEventos[eventoAtualNome]) return alert('Este evento já foi assinado e encerrado.');
