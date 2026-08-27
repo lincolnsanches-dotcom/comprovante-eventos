@@ -406,6 +406,29 @@
     </div>
 </div>
 
+<!-- MODAL DE EDIÇÃO DO NOME DO EVENTO -->
+<div id="modalEditarEvento" class="modal">
+    <div class="modal-content modal-sm">
+        <button class="btn-close-modal" onclick="fecharModalEditarEvento()">✖</button>
+        <h3 style="color: var(--primary); margin-bottom:15px;">✏️ Renomear / Corrigir Evento</h3>
+        <input type="hidden" id="editEventoLoteChave">
+        <input type="hidden" id="editEventoNomeAntigo">
+        <div class="form-group" style="margin-bottom: 12px;">
+            <label>Nome Atual do Evento:</label>
+            <input type="text" id="editEventoNomeAtual" disabled style="background:#e2e8f0; font-weight:bold;">
+        </div>
+        <div class="form-group" style="margin-bottom: 15px;">
+            <label>Novo Nome Correto:</label>
+            <input type="text" id="editEventoNovoNome" placeholder="Ex: MRBF">
+            <small style="color:#666; margin-top:4px;">Se já existir outro evento com o novo nome, os lançamentos serão <strong>unificados automaticamente</strong>.</small>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <button class="btn btn-secondary" onclick="fecharModalEditarEvento()" style="flex: 1;">Cancelar</button>
+            <button class="btn btn-success" onclick="salvarEdicaoNomeEvento()" style="flex: 1;">Salvar Alterações</button>
+        </div>
+    </div>
+</div>
+
 <!-- MODAL DETALHADO DE ASSINATURA -->
 <div id="modalAssinatura" class="modal">
     <div class="modal-content">
@@ -1028,6 +1051,7 @@
         const eventosMap = obterEventosConsolidados();
         const chavesLotes = Object.keys(eventosMap);
         const filtroStatus = document.getElementById('filtroStatus')?.value || 'todos';
+        const isGerente = usuarioLogado && (usuarioLogado.cargo === 'Gerente / Supervisor' || usuarioLogado.cargo === 'Atendente A&B');
 
         if (chavesLotes.length === 0) {
             tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Nenhum evento registrado ainda.</td></tr>';
@@ -1050,9 +1074,13 @@
             const primeiraData = datasArray.length > 0 ? datasArray[0].split('(')[1]?.replace(')', '') : '';
             const tituloExibicao = estaAssinado && primeiraData ? `${ev.nomeEvento} (${primeiraData})` : ev.nomeEvento;
 
+            const btnEditar = isGerente 
+                ? `<button class="btn btn-warning btn-sm" style="margin-left:5px;" onclick="abrirModalEditarEvento('${loteChave}', '${ev.nomeEvento}')">✏️ Editar</button>` 
+                : '';
+
             tbody.innerHTML += `
                 <tr>
-                    <td><strong>${tituloExibicao}</strong></td>
+                    <td><strong>${tituloExibicao}</strong> ${btnEditar}</td>
                     <td>${datasArray.join('<br>')}</td>
                     <td><span class="badge" style="background:#e2e8f0; color:#333;">${ev.totalLancamentos} lançamento(s)</span></td>
                     <td>${statusTag}</td>
@@ -1061,6 +1089,65 @@
                     </td>
                 </tr>
             `;
+        });
+    }
+
+    function abrirModalEditarEvento(loteChave, nomeAtual) {
+        document.getElementById('editEventoLoteChave').value = loteChave;
+        document.getElementById('editEventoNomeAntigo').value = nomeAtual;
+        document.getElementById('editEventoNomeAtual').value = nomeAtual;
+        document.getElementById('editEventoNovoNome').value = nomeAtual;
+        document.getElementById('modalEditarEvento').style.display = 'flex';
+    }
+
+    function fecharModalEditarEvento() {
+        document.getElementById('modalEditarEvento').style.display = 'none';
+    }
+
+    function salvarEdicaoNomeEvento() {
+        const loteChaveOriginal = document.getElementById('editEventoLoteChave').value;
+        const nomeAntigo = document.getElementById('editEventoNomeAntigo').value;
+        const novoNomeInput = document.getElementById('editEventoNovoNome').value.trim().toUpperCase();
+
+        if (!novoNomeInput) return alert('Por favor, digite o novo nome do evento.');
+        if (novoNomeInput === nomeAntigo) return fecharModalEditarEvento();
+
+        let atualizacoes = {};
+        
+        // Atualiza o nome do evento em todas as fichas atreladas ao lote original
+        fichas.forEach(f => {
+            const evNome = f.evento ? f.evento.toUpperCase() : '';
+            const lote = f.loteChave || `${evNome}_LOTE_1`;
+            if (lote === loteChaveOriginal || evNome === nomeAntigo) {
+                atualizacoes['fichas/' + f.id + '/evento'] = novoNomeInput;
+                atualizacoes['fichas/' + f.id + '/loteChave'] = `${novoNomeInput}_LOTE_1`;
+            }
+        });
+
+        // Se houver assinaturas ou preços salvos no lote antigo, migra para a chave do novo lote
+        const novoLoteChave = `${novoNomeInput}_LOTE_1`;
+        if (assinaturasEventos[loteChaveOriginal]) {
+            atualizacoes['assinaturas/' + novoLoteChave] = assinaturasEventos[loteChaveOriginal];
+            if (novoLoteChave !== loteChaveOriginal) {
+                atualizacoes['assinaturas/' + loteChaveOriginal] = null;
+            }
+        }
+
+        if (precosAjustadosEventos[loteChaveOriginal]) {
+            atualizacoes['precosAjustados/' + novoLoteChave] = precosAjustadosEventos[loteChaveOriginal];
+            if (novoLoteChave !== loteChaveOriginal) {
+                atualizacoes['precosAjustados/' + loteChaveOriginal] = null;
+            }
+        }
+
+        database.ref().update(atualizacoes, (error) => {
+            if (error) {
+                alert('Erro ao atualizar o evento: ' + error.message);
+            } else {
+                registrarLog('EDIÇÃO_EVENTO', `Alterou o nome do evento de '${nomeAntigo}' para '${novoNomeInput}'.`);
+                alert(`Evento renomeado para '${novoNomeInput}' com sucesso! Lançamentos unificados.`);
+                fecharModalEditarEvento();
+            }
         });
     }
 
